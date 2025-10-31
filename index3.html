@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Web Components Showcase</title>
+    <link rel="stylesheet" href="/src/styles/global.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">🎨 Material Design</h1>
+                <p class="hero-subtitle">Nowoczesne Web Components z Lit</p>
+                <div class="hero-actions">
+                    <material-button variant="filled" elevated class="hero-btn">
+                        <span slot="icon" class="material-icons">rocket_launch</span>
+                        Rozpocznij
+                    </material-button>
+                    <material-button variant="outlined" class="hero-btn">
+                        <span slot="icon" class="material-icons">code</span>
+                        GitHub
+                    </material-button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="floating-cards">
+                    <material-card elevated class="card-1">
+                        <span slot="title">Button</span>
+                        <div slot="content" style="padding: 1rem 0;">
+                            <material-button variant="filled">Click me</material-button>
+                        </div>
+                    </material-card>
+                    <material-card elevated class="card-2">
+                        <span slot="title">Input</span>
+                        <div slot="content" style="padding: 1rem 0;">
+                            <material-textfield label="Email" type="email"></material-textfield>
+                        </div>
+                    </material-card>
+                    <material-card elevated class="card-3">
+                        <span slot="title">Card</span>
+                        <p slot="content">Beautiful component</p>
+                    </material-card>
+                </div>
+            </div>
+        </section>
+
+        <!-- Components Showcase -->
+        <main class="container">
+            <!-- Buttons Section -->
+            <section class="showcase-section">
+                <h2>✨ Przyciski Material</h2>
+                <p class="section-description">Różne warianty przycisków z efektami ripple</p>
+                
+                <div class="components-grid">
+                    <div class="component-demo">
+                        <h3>Filled Buttons</h3>
+                        <div class="demo-group">
+                            <material-button variant="filled">Primary</material-button>
+                            <material-button variant="filled" elevated>Elevated</material-button>
+                            <material-button variant="filled" loading>Loading</material-button>
+                        </div>
+                    </div>
+                    
+                    <div class="component-demo">
+                        <h3>Outlined Buttons</h3>
+                        <div class="demo-group">
+                            <material-button variant="outlined">Outlined</material-button>
+                            <material-button variant="outlined" disabled>Disabled</material-button>
+                        </div>
+                    </div>
+                    
+                    <div class="component-demo">
+                        <h3>Text Buttons</h3>
+                        <div class="demo-group">
+                            <material-button variant="text">Text</material-button>
+                            <material-button variant="text">
+                                <span slot="icon" class="material-icons">favorite</span>
+                                Z ikoną
+                            </material-button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cards Section -->
+            <section class="showcase-section">
+                <h2>🎴 Karty Material</h2>
+                <p class="section-description">Elastyczne karty z różnymi stylami</p>
+                
+                <div class="cards-grid">
+                    <material-card elevated class="feature-card">
+                        <span slot="title">💎 Elevated Card</span>
+                        <span slot="subtitle">Z cieniem i hover efektem</span>
+                        <p slot="content">Karta z elewacją która podnosi się po najechaniu. Idealna na kafelki i listy.</p>
+                        <div slot="actions">
+                            <material-button variant="text">Anuluj</material-button>
+                            <material-button variant="filled">Akceptuj</material-button>
+                        </div>
+                    </material-card>
+
+                    <material-card outlined class="feature-card">
+                        <span slot="title">📱 Outlined Card</span>
+                        <span slot="subtitle">Czysty design z obramowaniem</span>
+                        <p slot="content">Perfekcyjna na formularze i sekcje które wymagają delikatnego rozgraniczenia.</p>
+                        <div slot="actions">
+                            <material-button variant="text">Więcej</material-button>
+                        </div>
+                    </material-card>
+
+                    <material-card elevated class="feature-card image-card">
+                        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=200&fit=crop" 
+                             slot="image" alt="Technology" class="card-image">
+                        <span slot="title">🚀 Z obrazkiem</span>
+                        <span slot="subtitle">Wizualnie atrakcyjna</span>
+                        <p slot="content">Karty wspierają obrazy w nagłówku dla lepszego wizualnego oddziaływania.</p>
+                        <div slot="actions">
+                            <material-button variant="text">Udostępnij</material-button>
+                            <material-button variant="text">Explore</material-button>
+                        </div>
+                    </material-card>
+                </div>
+            </section>
+
+            <!-- Forms Section -->
+            <section class="showcase-section">
+                <h2>📝 Formularze Material</h2>
+                <p class="section-description">Polformularza z floating labels i walidacją</p>
+                
+                <div class="form-demo">
+                    <material-card elevated style="max-width: 500px; margin: 0 auto;">
+                        <span slot="title">📧 Formularz Kontaktowy</span>
+                        <div slot="content">
+                            <material-textfield 
+                                label="Imię i nazwisko"
+                                required
+                                helper="Wprowadź swoje pełne imię">
+                            </material-textfield>
+                            
+                            <material-textfield 
+                                label="Email"
+                                type="email"
+                                required
+                                error="Proszę wprowadzić poprawny email">
+                            </material-textfield>
+                            
+                            <material-textfield 
+                                label="Wiadomość"
+                                type="textarea"
+                                helper="Maksymalnie 500 znaków">
+                            </material-textfield>
+                            
+                            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                                <material-button variant="outlined" style="flex: 1;">Wyczyść</material-button>
+                                <material-button variant="filled" elevated style="flex: 1;">Wyślij</material-button>
+                            </div>
+                        </div>
+                    </material-card>
+                </div>
+            </section>
+
+            <!-- Interactive Demo -->
+            <section class="showcase-section">
+                <h2>🎮 Interaktywna Demo</h2>
+                <p class="section-description">Zobacz komponenty w akcji</p>
+                
+                <div class="interactive-demo">
+                    <material-card elevated style="max-width: 600px; margin: 0 auto;">
+                        <span slot="title">Licznik Kliknięć</span>
+                        <div slot="content" style="text-align: center; padding: 2rem;">
+                            <h3 style="font-size: 3rem; margin: 0; color: var(--md-sys-color-primary);" id="counter">0</h3>
+                            <p style="color: var(--md-sys-color-on-surface-variant);">kliknięć</p>
+                            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                                <material-button variant="filled" id="increment-btn">
+                                    <span slot="icon" class="material-icons">add</span>
+                                    Zwiększ
+                                </material-button>
+                                <material-button variant="outlined" id="reset-btn">
+                                    <span slot="icon" class="material-icons">refresh</span>
+                                    Reset
+                                </material-button>
+                            </div>
+                        </div>
+                    </material-card>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <p>🛠️ Zbudowane z Vite + Lit + Material Design</p>
+                <p>Nowoczesne Web Components w czystym JavaScript</p>
+            </div>
+        </footer>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+    <script type="module">
+        // Interactive counter
+        let count = 0;
+        const counterElement = document.getElementById('counter');
+        const incrementBtn = document.getElementById('increment-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        incrementBtn.addEventListener('material-click', () => {
+            count++;
+            counterElement.textContent = count;
+            counterElement.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                counterElement.style.transform = 'scale(1)';
+            }, 150);
+        });
+
+        resetBtn.addEventListener('material-click', () => {
+            count = 0;
+            counterElement.textContent = count;
+        });
+
+        // Add some animation to hero cards
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.floating-cards material-card');
+            cards.forEach((card, index) => {
+                card.style.animation = `float 3s ease-in-out ${index * 0.2}s infinite alternate`;
+            });
+        });
+    </script>
+
+    <style>
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-primary-container) 100%);
+            color: var(--md-sys-color-on-primary);
+            padding: 4rem 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .hero-content {
+            max-width: 500px;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin: 0 0 1rem 0;
+            background: linear-gradient(45deg, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin: 0 0 2rem 0;
+            opacity: 0.9;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-btn {
+            padding: 0 2rem;
+        }
+
+        .hero-btn [slot="icon"] {
+            margin-right: 0.5rem;
+        }
+
+        /* Floating Cards Animation */
+        .floating-cards {
+            position: relative;
+            height: 300px;
+        }
+
+        .floating-cards material-card {
+            position: absolute;
+            width: 250px;
+        }
+
+        .card-1 {
+            top: 0;
+            left: 0;
+            transform: rotate(-5deg);
+        }
+
+        .card-2 {
+            top: 50px;
+            left: 150px;
+            transform: rotate(3deg);
+        }
+
+        .card-3 {
+            top: 120px;
+            left: 50px;
+            transform: rotate(-2deg);
+        }
+
+        @keyframes float {
+            from { transform: translateY(0px) rotate(var(--rotate, 0deg)); }
+            to { transform: translateY(-20px) rotate(var(--rotate, 0deg)); }
+        }
+
+        /* Showcase Sections */
+        .showcase-section {
+            margin: 4rem 0;
+            padding: 3rem 0;
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        .showcase-section:last-of-type {
+            border-bottom: none;
+        }
+
+        .showcase-section h2 {
+            font-size: 2.5rem;
+            margin: 0 0 1rem 0;
+            background: linear-gradient(45deg, var(--md-sys-color-primary), var(--md-sys-color-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-description {
+            font-size: 1.2rem;
+            color: var(--md-sys-color-on-surface-variant);
+            margin: 0 0 3rem 0;
+        }
+
+        /* Components Grid */
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+
+        .component-demo {
+            background: var(--md-sys-color-surface-container-low);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        .component-demo h3 {
+            margin: 0 0 1.5rem 0;
+            color: var(--md-sys-color-primary);
+        }
+
+        .demo-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .image-card .card-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            margin-bottom: 1rem;
+        }
+
+        /* Form Demo */
+        .form-demo {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--md-sys-color-surface-container-high);
+            color: var(--md-sys-color-on-surface-variant);
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+                padding: 2rem 1rem;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-actions {
+                justify-content: center;
+            }
+            
+            .floating-cards {
+                display: none;
+            }
+            
+            .components-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Material Icons in buttons */
+        material-button [slot="icon"] {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+    </style>
+</body>
+</html>

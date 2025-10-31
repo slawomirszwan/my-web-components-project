@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components - Strona Główna</title>
+    <link rel="stylesheet" href="/src/styles/global.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>🚀 Web Components Showcase</h1>
+                <p>Odkryj potęgę nowoczesnych komponentów webowych</p>
+                
+                <div class="navigation-cards">
+                    <a href="material-showcase.html" class="nav-card">
+                        <div class="nav-icon">🎨</div>
+                        <h3>Material Design</h3>
+                        <p>Nowoczesne komponenty z Lit i Material Design</p>
+                    </a>
+                    
+                    <a href="components-demo.html" class="nav-card">
+                        <div class="nav-icon">⚡</div>
+                        <h3>Demo Komponentów</h3>
+                        <p>Interaktywne przykłady użycia komponentów</p>
+                    </a>
+                    
+                    <a href="basic-examples.html" class="nav-card">
+                        <div class="nav-icon">🔧</div>
+                        <h3>Podstawowe Przykłady</h3>
+                        <p>Czyste Web Components bez bibliotek</p>
+                    </a>
+
+
+                    <!-- W index.html dodaj kartę do nawigacji -->
+                    <a href="pixelart-demo.html" class="nav-card">
+                        <div class="nav-icon">🎨</div>
+                        <h3>Pixel Art Creator</h3>
+                        <p>Twórz pixel art w przeglądarce z Material Design</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+    
+    <style>
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero-content p {
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+
+        .navigation-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+        }
+
+        .nav-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .nav-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .nav-card p {
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+    </style>
+</body>
+</html>

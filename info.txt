@@ -1,0 +1,983 @@
+projekt w vite do obsługi   js  a potem do obsługi czystego web component w js
+ze strukturą dla web componentów i innych kodów js
+Oto kompletna struktura projektu Vite do obsługi Web Components w czystym JavaScript:
+
+Struktura projektu
+text
+my-web-components-project/
+├── public/
+│   └── favicon.ico
+├── src/
+│   ├── components/
+│   │   ├── ui/
+│   │   │   ├── my-button/
+│   │   │   │   ├── my-button.js
+│   │   │   │   └── my-button.css
+│   │   │   ├── my-card/
+│   │   │   │   ├── my-card.js
+│   │   │   │   └── my-card.css
+│   │   │   └── index.js
+│   │   ├── layout/
+│   │   │   ├── app-header/
+│   │   │   │   ├── app-header.js
+│   │   │   │   └── app-header.css
+│   │   │   └── index.js
+│   │   └── index.js
+│   ├── utils/
+│   │   ├── helpers.js
+│   │   ├── constants.js
+│   │   └── index.js
+│   ├── styles/
+│   │   ├── global.css
+│   │   └── variables.css
+│   ├── main.js
+│   └── index.html
+├── package.json
+├── vite.config.js
+└── README.md
+Pliki konfiguracyjne
+package.json
+json
+{
+  "name": "web-components-project",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
+vite.config.js
+javascript
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  server: {
+    port: 3000,
+    open: true
+  },
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    outDir: 'dist'
+  }
+})
+Pliki źródłowe
+src/index.html
+html
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components Project</title>
+    <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+    <div id="app">
+        <app-header title="Moja Aplikacja Web Components"></app-header>
+        
+        <main class="container">
+            <h1>Demo Web Components</h1>
+            
+            <section class="demo-section">
+                <h2>Przyciski</h2>
+                <my-button variant="primary">Primary Button</my-button>
+                <my-button variant="secondary">Secondary Button</my-button>
+                <my-button variant="danger">Danger Button</my-button>
+            </section>
+            
+            <section class="demo-section">
+                <h2>Karty</h2>
+                <my-card 
+                    title="Przykładowa karta" 
+                    description="To jest przykładowa karta stworzona jako Web Component">
+                    <span slot="footer">Stopka karty</span>
+                </my-card>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+src/main.js
+javascript
+// Import wszystkich komponentów
+import './components/index.js';
+
+// Kod inicjalizacyjny aplikacji
+console.log('Aplikacja Web Components uruchomiona!');
+
+// Przykładowe API do zarządzania komponentami
+export const ComponentManager = {
+  registeredComponents: new Set(),
+  
+  register(componentName) {
+    this.registeredComponents.add(componentName);
+    console.log(`Zarejestrowano komponent: ${componentName}`);
+  },
+  
+  listComponents() {
+    return Array.from(this.registeredComponents);
+  }
+};
+Komponenty
+src/components/ui/my-button/my-button.js
+javascript
+import './my-button.css';
+
+class MyButton extends HTMLElement {
+  static observedAttributes = ['variant', 'disabled'];
+  
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.render();
+  }
+  
+  connectedCallback() {
+    this.addEventListener('click', this.handleClick);
+    ComponentManager.register('my-button');
+  }
+  
+  disconnectedCallback() {
+    this.removeEventListener('click', this.handleClick);
+  }
+  
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      this.render();
+    }
+  }
+  
+  handleClick = (event) => {
+    if (this.disabled) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    
+    this.dispatchEvent(new CustomEvent('button-click', {
+      detail: { message: 'Button clicked!' },
+      bubbles: true,
+      composed: true
+    }));
+  }
+  
+  get variant() {
+    return this.getAttribute('variant') || 'primary';
+  }
+  
+  get disabled() {
+    return this.hasAttribute('disabled');
+  }
+  
+  set disabled(value) {
+    if (value) {
+      this.setAttribute('disabled', '');
+    } else {
+      this.removeAttribute('disabled');
+    }
+  }
+  
+  render() {
+    const variant = this.variant;
+    const isDisabled = this.disabled;
+    
+    this.shadowRoot.innerHTML = `
+      <button class="btn ${variant}" ?disabled="${isDisabled}">
+        <slot></slot>
+      </button>
+    `;
+  }
+}
+
+customElements.define('my-button', MyButton);
+export default MyButton;
+src/components/ui/my-button/my-button.css
+css
+:host {
+  display: inline-block;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn.primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn.primary:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+}
+
+.btn.secondary {
+  background-color: var(--color-secondary);
+  color: white;
+}
+
+.btn.secondary:hover:not(:disabled) {
+  background-color: var(--color-secondary-dark);
+}
+
+.btn.danger {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+.btn.danger:hover:not(:disabled) {
+  background-color: var(--color-danger-dark);
+}
+src/components/ui/my-card/my-card.js
+javascript
+import './my-card.css';
+
+class MyCard extends HTMLElement {
+  static observedAttributes = ['title', 'description'];
+  
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+  
+  connectedCallback() {
+    this.render();
+    ComponentManager.register('my-card');
+  }
+  
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      this.render();
+    }
+  }
+  
+  get title() {
+    return this.getAttribute('title') || '';
+  }
+  
+  get description() {
+    return this.getAttribute('description') || '';
+  }
+  
+  render() {
+    this.shadowRoot.innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <h3>${this.title}</h3>
+        </div>
+        <div class="card-body">
+          <p>${this.description}</p>
+          <slot name="content"></slot>
+        </div>
+        <div class="card-footer">
+          <slot name="footer"></slot>
+        </div>
+      </div>
+    `;
+  }
+}
+
+customElements.define('my-card', MyCard);
+export default MyCard;
+src/components/ui/my-card/my-card.css
+css
+:host {
+  display: block;
+  margin: 1rem 0;
+}
+
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1rem 1.5rem;
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-body p {
+  margin: 0 0 1rem 0;
+  color: var(--color-text);
+}
+
+.card-footer {
+  padding: 1rem 1.5rem;
+  background-color: var(--color-background);
+  border-top: 1px solid var(--color-border);
+}
+src/components/layout/app-header/app-header.js
+javascript
+import './app-header.css';
+
+class AppHeader extends HTMLElement {
+  static observedAttributes = ['title'];
+  
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+  
+  connectedCallback() {
+    this.render();
+    ComponentManager.register('app-header');
+  }
+  
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      this.render();
+    }
+  }
+  
+  get title() {
+    return this.getAttribute('title') || 'Aplikacja';
+  }
+  
+  render() {
+    this.shadowRoot.innerHTML = `
+      <header class="app-header">
+        <div class="container">
+          <h1>${this.title}</h1>
+          <nav class="nav">
+            <slot name="navigation"></slot>
+          </nav>
+        </div>
+      </header>
+    `;
+  }
+}
+
+customElements.define('app-header', AppHeader);
+export default AppHeader;
+src/components/layout/app-header/app-header.css
+css
+:host {
+  display: block;
+}
+
+.app-header {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.nav {
+  display: flex;
+  gap: 1rem;
+}
+Pliki indeksujące
+src/components/ui/index.js
+javascript
+// Import i eksport wszystkich komponentów UI
+export { default as MyButton } from './my-button/my-button.js';
+export { default as MyCard } from './my-card/my-card.js';
+
+// Automatyczna rejestracja komponentów
+import './my-button/my-button.js';
+import './my-card/my-card.js';
+src/components/layout/index.js
+javascript
+// Import i eksport wszystkich komponentów layoutu
+export { default as AppHeader } from './app-header/app-header.js';
+
+// Automatyczna rejestracja komponentów
+import './app-header/app-header.js';
+src/components/index.js
+javascript
+// Główny plik eksportujący wszystkie komponenty
+export * from './ui/index.js';
+export * from './layout/index.js';
+
+// Import dla automatycznej rejestracji
+import './ui/index.js';
+import './layout/index.js';
+Utils
+src/utils/helpers.js
+javascript
+// Pomocnicze funkcje dla Web Components
+export function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+export function generateId(prefix = 'comp') {
+  return `${prefix}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+export function dispatchCustomEvent(element, eventName, detail = {}) {
+  const event = new CustomEvent(eventName, {
+    detail,
+    bubbles: true,
+    composed: true
+  });
+  element.dispatchEvent(event);
+}
+src/utils/constants.js
+javascript
+// Stałe dla aplikacji
+export const EVENTS = {
+  BUTTON_CLICK: 'button-click',
+  CARD_SELECT: 'card-select',
+  FORM_SUBMIT: 'form-submit'
+};
+
+export const CSS_CLASSES = {
+  LOADING: 'loading',
+  DISABLED: 'disabled',
+  ACTIVE: 'active'
+};
+src/utils/index.js
+javascript
+// Eksport wszystkich utilitów
+export * from './helpers.js';
+export * from './constants.js';
+Style
+src/styles/variables.css
+css
+:root {
+  /* Kolory */
+  --color-primary: #007bff;
+  --color-primary-dark: #0056b3;
+  --color-secondary: #6c757d;
+  --color-secondary-dark: #545b62;
+  --color-danger: #dc3545;
+  --color-danger-dark: #c82333;
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  
+  /* Kolory tekstu */
+  --color-text: #333;
+  --color-text-light: #666;
+  --color-text-lighter: #999;
+  
+  /* Tła */
+  --color-background: #f8f9fa;
+  --color-background-dark: #e9ecef;
+  
+  /* Obramowania */
+  --color-border: #dee2e6;
+  --color-border-dark: #adb5bd;
+  
+  /* Cienie */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Zaokrąglenia */
+  --border-radius-sm: 4px;
+  --border-radius: 6px;
+  --border-radius-lg: 8px;
+  
+  /* Przejścia */
+  --transition: all 0.2s ease;
+}
+src/styles/global.css
+css
+@import './variables.css';
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.demo-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.demo-section h2 {
+  margin-top: 0;
+  color: var(--color-primary);
+}
+Instrukcje uruchomienia
+Zainstaluj zależności:
+
+bash
+npm install
+Uruchom serwer deweloperski:
+
+bash
+npm run dev
+Budowanie na produkcję:
+
+bash
+npm run build
+Podgląd zbudowanej wersji:
+
+bash
+npm run preview
+Kluczowe cechy tej struktury:
+Modularność - każdy komponent w osobnej katalogu z własnymi stylami
+
+Automatyczna rejestracja - komponenty rejestrują się automatycznie
+
+Manager komponentów - centralne zarządzanie zarejestrowanymi komponentami
+
+Zmienne CSS - spójny system designu
+
+TypeScript gotowy - łatwe rozszerzenie o TypeScript
+
+Hot reload - Vite zapewnia szybki development
+
+Ta struktura jest skalowalna i łatwa w utrzymaniu, idealna dla projektów opartych o Web Components.
+
+Nie można odnaleźć tej strony localhost
+Nie znaleziono strony sieci Web dla adresu internetowego: http://localhost:3000/
+Problem z localhost:3000 jest częsty. Oto jak go rozwiązać krok po kroku:
+
+1. Sprawdź czy Vite jest uruchomiony
+Najpierw upewnij się, że serwer deweloperski działa:
+
+bash
+# Sprawdź czy proces Vite jest uruchomiony
+ps aux | grep vite
+
+# Lub w Windows:
+tasklist | findstr vite
+2. Rozwiązania problemu
+Rozwiązanie A: Zmień port
+Zmień konfigurację Vite na inny port:
+
+vite.config.js
+
+javascript
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  server: {
+    port: 3001, // Zmień na inny port
+    host: true, // Dodaj to
+    open: true
+  },
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    outDir: 'dist'
+  }
+})
+Rozwiązanie B: Popraw ścieżki w index.html
+src/index.html - popraw ścieżki:
+
+html
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components Project</title>
+    <link rel="stylesheet" href="./styles/global.css">
+</head>
+<body>
+    <div id="app">
+        <app-header title="Moja Aplikacja Web Components"></app-header>
+        
+        <main class="container">
+            <h1>Demo Web Components</h1>
+            
+            <section class="demo-section">
+                <h2>Przyciski</h2>
+                <my-button variant="primary">Primary Button</my-button>
+                <my-button variant="secondary">Secondary Button</my-button>
+                <my-button variant="danger">Danger Button</my-button>
+            </section>
+            
+            <section class="demo-section">
+                <h2>Karty</h2>
+                <my-card 
+                    title="Przykładowa karta" 
+                    description="To jest przykładowa karta stworzona jako Web Component">
+                    <span slot="footer">Stopka karty</span>
+                </my-card>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+3. Szybka naprawa - uproszczona wersja
+Stwórz minimalną wersję do testów:
+
+package.json
+
+json
+{
+  "name": "web-components-project",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
+vite.config.js
+
+javascript
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  server: {
+    port: 3000,
+    host: true
+  }
+})
+index.html (w głównym katalogu)
+
+html
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components Test</title>
+    <style>
+        :root {
+            --color-primary: #007bff;
+            --color-secondary: #6c757d;
+            --color-danger: #dc3545;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .primary { background-color: var(--color-primary); }
+        .secondary { background-color: var(--color-secondary); }
+        .danger { background-color: var(--color-danger); }
+    </style>
+</head>
+<body>
+    <h1>Test Web Components</h1>
+    
+    <my-button variant="primary">Test Button</my-button>
+    <my-button variant="secondary">Secondary</my-button>
+    
+    <script type="module">
+        class MyButton extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+            
+            connectedCallback() {
+                const variant = this.getAttribute('variant') || 'primary';
+                this.shadowRoot.innerHTML = `
+                    <button class="btn ${variant}">
+                        <slot></slot>
+                    </button>
+                `;
+            }
+        }
+
+        customElements.define('my-button', MyButton);
+        console.log('Web Component zarejestrowany!');
+    </script>
+</body>
+</html>
+4. Procedura uruchomienia krok po kroku
+bash
+# 1. Stwórz nowy projekt
+mkdir my-web-components
+cd my-web-components
+
+# 2. Zainicjuj package.json
+npm init -y
+
+# 3. Zainstaluj Vite
+npm install vite --save-dev
+
+# 4. Stwórz pliki według uproszczonej struktury
+# (użyj kodu powyżej)
+
+# 5. Uruchom serwer
+npm run dev
+5. Sprawdź alternatywne adresy
+Vite często udostępnia aplikację pod kilkoma adresami:
+
+http://localhost:3000
+
+http://127.0.0.1:3000
+
+http://192.168.x.x:3000 (twój lokalny IP)
+
+6. Rozwiązanie problemów z portem
+Jeśli port 3000 jest zajęty:
+
+bash
+# Znajdź co używa portu 3000
+lsof -i :3000
+
+# W Windows:
+netstat -ano | findstr :3000
+
+# Zabij proces jeśli potrzebujesz
+kill -9 [PID]
+7. Ostateczne rozwiązanie
+Jeśli nadal masz problemy, użyj prostego serwera HTTP:
+
+bash
+# Zainstaluj globalnie http-server
+npm install -g http-server
+
+# Uruchom w katalogu projektu
+http-server -p 3000
+Spróbuj najpierw Rozwiązanie A (zmiana portu na 3001), ponieważ port 3000 często bywa zajęty przez inne aplikacje.
+
+problemem było że nie było index.html w głownym folderze , albo nie tak było w vite.config.js
+Masz rację! To częsty problem. W Vite index.html musi być w głównym folderze projektu, nie w src. Oto poprawna struktura:
+
+Poprawna struktura projektu Vite
+text
+my-web-components-project/
+├── index.html ✨ (MUSI być w głównym folderze)
+├── package.json
+├── vite.config.js
+├── public/
+│   └── favicon.ico
+└── src/
+    ├── components/
+    │   ├── ui/
+    │   │   ├── my-button/
+    │   │   │   ├── my-button.js
+    │   │   │   └── my-button.css
+    │   │   └── my-card/
+    │   │       ├── my-card.js
+    │   │       └── my-card.css
+    │   └── layout/
+    │       └── app-header/
+    │           ├── app-header.js
+    │           └── app-header.css
+    ├── utils/
+    │   └── helpers.js
+    ├── styles/
+    │   ├── global.css
+    │   └── variables.css
+    └── main.js
+Poprawione pliki konfiguracyjne
+index.html (w głównym folderze)
+html
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components Project</title>
+    <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+    <div id="app">
+        <app-header title="Moja Aplikacja Web Components"></app-header>
+        
+        <main class="container">
+            <h1>Demo Web Components</h1>
+            
+            <section class="demo-section">
+                <h2>Przyciski</h2>
+                <my-button variant="primary">Primary Button</my-button>
+                <my-button variant="secondary">Secondary Button</my-button>
+                <my-button variant="danger">Danger Button</my-button>
+            </section>
+            
+            <section class="demo-section">
+                <h2>Karty</h2>
+                <my-card 
+                    title="Przykładowa karta" 
+                    description="To jest przykładowa karta stworzona jako Web Component">
+                    <span slot="footer">Stopka karty</span>
+                </my-card>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+vite.config.js
+javascript
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  server: {
+    port: 3000,
+    host: true,  // Pozwala na dostęp z innych urządzeń
+    open: true   // Automatycznie otwiera przeglądarkę
+  },
+  build: {
+    target: 'esnext',
+    outDir: 'dist'
+  }
+})
+Szybka naprawa - przenieś index.html
+Jeśli masz już projekt, po prostu przenieś index.html z src/ do głównego folderu:
+
+bash
+# Przenieś index.html do głównego folderu
+mv src/index.html ./
+
+# Upewnij się że struktura wygląda tak:
+ls -la
+# index.html, package.json, vite.config.js, src/, public/
+Minimalna działająca wersja do testu
+index.html (w głównym folderze):
+
+html
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components Test</title>
+</head>
+<body>
+    <h1>Test Web Components - DZIAŁA! 🎉</h1>
+    
+    <my-button variant="primary">Primary Button</my-button>
+    <my-button variant="secondary">Secondary Button</my-button>
+
+    <script type="module">
+        // Prosty komponent do testu
+        class MyButton extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+            
+            connectedCallback() {
+                const variant = this.getAttribute('variant') || 'primary';
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        button {
+                            padding: 12px 24px;
+                            margin: 5px;
+                            border: none;
+                            border-radius: 6px;
+                            color: white;
+                            cursor: pointer;
+                            font-size: 16px;
+                        }
+                        .primary { background: #007bff; }
+                        .secondary { background: #6c757d; }
+                    </style>
+                    <button class="${variant}">
+                        <slot></slot>
+                    </button>
+                `;
+            }
+        }
+
+        customElements.define('my-button', MyButton);
+        console.log('Vite powinien działać!');
+    </script>
+</body>
+</html>
+Procedura naprawy krok po kroku
+bash
+# 1. Przejdź do folderu projektu
+cd my-web-components-project
+
+# 2. Sprawdź strukturę
+ls -la
+# Powinieneś zobaczyć: index.html, package.json, src/
+
+# 3. Jeśli index.html jest w src, przenieś go
+mv src/index.html ./
+
+# 4. Uruchom ponownie
+npm run dev
+Dlaczego to działa?
+Vite domyślnie szuka index.html w głównym katalogu projektu. To punkt wejścia aplikacji.
+
+Jeśli nadal masz problemy, sprawdź:
+
+Czy index.html jest w głównym folderze?
+
+Czy vite.config.js ma poprawną konfigurację?
+
+Czy port 3000 nie jest zajęty? (spróbuj zmienić na 3001)
+
+Teraz powinno działać! 🚀

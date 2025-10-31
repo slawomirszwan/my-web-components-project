@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components Test</title>
+    <style>
+        :root {
+            --color-primary: #007bff;
+            --color-secondary: #6c757d;
+            --color-danger: #dc3545;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .primary { background-color: var(--color-primary); }
+        .secondary { background-color: var(--color-secondary); }
+        .danger { background-color: var(--color-danger); }
+    </style>
+</head>
+<body>
+    <h1>Test Web Components</h1>
+    
+    <my-button variant="primary">Test Button</my-button>
+    <my-button variant="secondary">Secondary</my-button>
+    
+    <script type="module">
+        class MyButton extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+            
+            connectedCallback() {
+                const variant = this.getAttribute('variant') || 'primary';
+                this.shadowRoot.innerHTML = `
+                    <button class="btn ${variant}">
+                        <slot></slot>
+                    </button>
+                `;
+            }
+        }
+
+        customElements.define('my-button', MyButton);
+        console.log('Web Component zarejestrowany!');
+    </script>
+</body>
+</html>

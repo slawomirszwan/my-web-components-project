@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components Project</title>
+    <link rel="stylesheet" href="./styles/global.css">
+</head>
+<body>
+    <div id="app">
+        <app-header title="Moja Aplikacja Web Components"></app-header>
+        
+        <main class="container">
+            <h1>Demo Web Components</h1>
+            
+            <section class="demo-section">
+                <h2>Przyciski</h2>
+                <my-button variant="primary">Primary Button</my-button>
+                <my-button variant="secondary">Secondary Button</my-button>
+                <my-button variant="danger">Danger Button</my-button>
+            </section>
+            
+            <section class="demo-section">
+                <h2>Karty</h2>
+                <my-card 
+                    title="Przykładowa karta" 
+                    description="To jest przykładowa karta stworzona jako Web Component">
+                    <span slot="footer">Stopka karty</span>
+                </my-card>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

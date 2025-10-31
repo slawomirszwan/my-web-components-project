@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Creator</title>
+    <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+    <div class="page-header">
+        <a href="index.html" class="back-button">← Strona Główna</a>
+        <h1>🎨 Pixel Art Creator</h1>
+        <p>Twórz piękne pixel art w przeglądarce!</p>
+    </div>
+
+    <main class="container">
+        <div class="pixelart-layout">
+            <div class="main-canvas">
+                <pixelart-canvas 
+                    id="pixelCanvas"
+                    width="16"
+                    height="16"
+                    pixel-size="20"
+                ></pixelart-canvas>
+            </div>
+
+            <div class="sidebar">
+                <div class="tools-card card">
+                    <div class="card-content">
+                        <h3>🛠️ Narzędzia</h3>
+                        
+                        <div class="text-field">
+                            <label>Nazwa projektu</label>
+                            <input 
+                                type="text" 
+                                id="projectName"
+                                value="Mój Pixel Art"
+                                placeholder="Wprowadź nazwę projektu"
+                            >
+                        </div>
+
+                        <div class="tool-options">
+                            <label class="option">
+                                <input type="checkbox" id="gridSwitch" checked>
+                                <span>Pokaż siatkę</span>
+                            </label>
+                        </div>
+
+                        <div class="presets">
+                            <h4>Presety rozmiarów:</h4>
+                            <div class="preset-buttons">
+                                <button class="outlined-btn" data-size="8x8">8×8</button>
+                                <button class="outlined-btn" data-size="16x16">16×16</button>
+                                <button class="outlined-btn" data-size="32x32">32×32</button>
+                                <button class="outlined-btn" data-size="64x64">64×64</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="colors-card card">
+                    <div class="card-content">
+                        <h3>🎨 Paleta kolorów</h3>
+                        <div class="custom-colors">
+                            <div class="text-field">
+                                <label>Dodaj kolor HEX</label>
+                                <input 
+                                    type="text" 
+                                    id="colorInput"
+                                    value="#6750A4"
+                                    placeholder="#FFFFFF"
+                                >
+                            </div>
+                            <button class="filled-btn" id="addColorBtn">Dodaj</button>
+                        </div>
+                        <div id="customColors" class="custom-colors-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="tutorial-section">
+            <h2>📚 Jak używać?</h2>
+            <div class="tutorial-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h4>Wybierz kolor</h4>
+                    <p>Kliknij na kolor z palety aby go wybrać</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h4>Rysuj piksele</h4>
+                    <p>Kliknij na płótno aby postawić piksel</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h4>Przeciągaj do rysowania</h4>
+                    <p>Przytrzymaj i przeciągaj myszą dla ciągłych linii</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h4>Eksportuj</h4>
+                    <p>Zapisz swoją pracę jako obraz PNG</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Import tylko naszego komponentu pixelart -->
+    <script type="module" src="/src/components/pixelart/pixelart-canvas/pixelart-canvas.js"></script>
+
+    <script type="module">
+        // Poczekaj aż komponent się załaduje
+        setTimeout(() => {
+            const canvas = document.getElementById('pixelCanvas');
+            const gridSwitch = document.getElementById('gridSwitch');
+            const projectNameInput = document.getElementById('projectName');
+            const colorInput = document.getElementById('colorInput');
+            const addColorBtn = document.getElementById('addColorBtn');
+            const presetButtons = document.querySelectorAll('[data-size]');
+
+            if (!canvas) {
+                console.error('Canvas element not found');
+                return;
+            }
+
+            // Sync components
+            gridSwitch.addEventListener('change', (e) => {
+                canvas.showGrid = e.target.checked;
+            });
+
+            projectNameInput.addEventListener('input', (e) => {
+                canvas.projectName = e.target.value;
+            });
+
+            // Preset sizes
+            presetButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const [width, height] = e.target.dataset.size.split('x').map(Number);
+                    canvas.width = width;
+                    canvas.height = height;
+                });
+            });
+
+            // Custom colors
+            addColorBtn.addEventListener('click', () => {
+                const color = colorInput.value;
+                if (/^#[0-9A-F]{6}$/i.test(color)) {
+                    if (!canvas.colors.includes(color)) {
+                        canvas.colors = [...canvas.colors, color];
+                        updateCustomColors();
+                    }
+                } else {
+                    alert('Proszę wprowadzić poprawny kolor HEX (np. #FF0000)');
+                }
+            });
+
+            function updateCustomColors() {
+                const container = document.getElementById('customColors');
+                if (container) {
+                    container.innerHTML = canvas.colors.map(color => `
+                        <div class="color-swatch" style="background: ${color}" 
+                             onclick="document.getElementById('pixelCanvas').currentColor = '${color}'"></div>
+                    `).join('');
+                }
+            }
+
+            // Event listeners
+            canvas.addEventListener('pixel-changed', (e) => {
+                console.log('Pixel changed:', e.detail);
+            });
+
+            canvas.addEventListener('canvas-cleared', () => {
+                console.log('Canvas cleared');
+            });
+
+            updateCustomColors();
+        }, 100);
+    </script>
+
+    <style>
+        .pixelart-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .main-canvas {
+            min-height: 600px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--md-sys-color-surface);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-content h3 {
+            margin: 0 0 1rem 0;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .text-field {
+            margin-bottom: 1rem;
+        }
+
+        .text-field label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .text-field input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 4px;
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            font-size: 1rem;
+        }
+
+        .text-field input:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+        }
+
+        .tool-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+        }
+
+        .option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .presets {
+            margin-top: 1.5rem;
+        }
+
+        .presets h4 {
+            margin: 0 0 0.75rem 0;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.875rem;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .outlined-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--md-sys-color-outline);
+            background: transparent;
+            color: var(--md-sys-color-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .outlined-btn:hover {
+            background: var(--md-sys-color-primary-container);
+        }
+
+        .filled-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: var(--md-sys-color-primary);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .filled-btn:hover {
+            background: var(--md-sys-color-primary-dark);
+        }
+
+        .custom-colors {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .custom-colors .text-field {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .custom-colors-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .color-swatch {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+
+        .tutorial-section {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        .tutorial-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .step {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--md-sys-color-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-weight: bold;
+        }
+
+        .step h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .step p {
+            margin: 0;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .pixelart-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Web Components</title>
+    <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+    <div id="app">
+        <app-header title="Material Design + Lit"></app-header>
+        
+        <main class="container">
+            <h1>Material Design Components with Lit</h1>
+            
+            <section class="demo-section">
+                <h2>Material Buttons</h2>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <material-button variant="filled">Filled</material-button>
+                    <material-button variant="outlined">Outlined</material-button>
+                    <material-button variant="text">Text</material-button>
+                    <material-button variant="filled" elevated>Elevated</material-button>
+                    <material-button variant="filled" loading>Loading</material-button>
+                </div>
+            </section>
+            
+            <section class="demo-section">
+                <h2>Material Cards</h2>
+                <div class="component-grid">
+                    <material-card elevated>
+                        <span slot="title">Beautiful Sunset</span>
+                        <span slot="subtitle">Nature Photography</span>
+                        <p slot="content">Experience the breathtaking beauty of nature with this stunning sunset capture.</p>
+                        <div slot="actions">
+                            <material-button variant="text">Share</material-button>
+                            <material-button variant="text">Explore</material-button>
+                        </div>
+                    </material-card>
+                    
+                    <material-card outlined>
+                        <span slot="title">Modern Design</span>
+                        <span slot="subtitle">UI/UX Principles</span>
+                        <p slot="content">Learn about the latest design trends and principles in modern web development.</p>
+                        <div slot="actions">
+                            <material-button variant="text">Read More</material-button>
+                        </div>
+                    </material-card>
+                </div>
+            </section>
+            
+            <section class="demo-section">
+                <h2>Material Text Fields</h2>
+                <div style="max-width: 400px;">
+                    <material-textfield 
+                        label="Email" 
+                        type="email" 
+                        placeholder="Enter your email"
+                        helper="We'll never share your email">
+                    </material-textfield>
+                    
+                    <material-textfield 
+                        label="Password" 
+                        type="password"
+                        required
+                        error="Password is required">
+                    </material-textfield>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

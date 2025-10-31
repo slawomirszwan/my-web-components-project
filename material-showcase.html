@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Design Showcase</title>
+    <link rel="stylesheet" href="/src/styles/global.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="page-header">
+        <a href="index.html" class="back-button">
+            <span class="material-icons">arrow_back</span>
+            Strona Główna
+        </a>
+        <h1>🎨 Material Design Components</h1>
+    </div>
+
+    <main class="container">
+        <!-- Tutaj wklej całą zawartość z poprzedniego material-showcase -->
+        <section class="showcase-section">
+            <h2>✨ Przyciski Material</h2>
+            <!-- ... reszta contentu material ... -->
+        </section>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+    
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-primary-container) 100%);
+            color: white;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+    </style>
+</body>
+</html>
