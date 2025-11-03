@@ -1,0 +1,176 @@
+
+
+
+==============================================================
+
+na github nowy projektu
+najlepiej pusty (bez niczego)
+
+
+cd do folder projektu
+----
+.gitignore (z githuba wzór dla node) - bez node_modules
+
+git init 
+git add .
+
+git commit -m "initial commit"
+
+
+git remote add origin https://github.com/slawomirszwan/my-web-components-project.git
+
+
+git remote set-url origin https://github.com/slawomirszwan/my-web-components-project.git   
+
+------------
+error bo sa pliki na github -gitignore
+PS C:\Users\cgpf\DOKUMENTY\INFORMATYKA\Test\JS\WebComponents\wc\project_vite2\my-web-components-project> git push -u origin main                                                
+To https://github.com/slawomirszwan/my-web-components-project.git
+ ! [rejected]        main -> main (fetch first)
+error: failed to push some refs to 'https://github.com/slawomirszwan/my-web-components-project.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+-------
+git status
+------------
+z nadpisaniem gitignore z githuba
+opcja -f !!!!!!!!!!!! nadpisywanie tego co na github
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+C:\Users\cgpf\DOKUMENTY\INFORMATYKA\Test\JS\WebComponents\wc\project_vite2\my-web-components-project> git push -f origin main
+Enumerating objects: 64, done.
+Counting objects: 100% (64/64), done.
+Delta compression using up to 20 threads
+Compressing objects: 100% (59/59), done.
+Writing objects: 100% (64/64), 70.48 KiB | 4.40 MiB/s, done.
+Total 64 (delta 12), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (12/12), done.
+To https://github.com/slawomirszwan/my-web-components-project.git
+ + 30cdb49...cc2faec main -> main (forced update)
+
+
+testy
+npm run dev
+
+
+npm run build
+
+
+=======================================================================
+jak opublikowac na github projekt który już mam na dysku
+my-web-components-project  na github project pusty my-web-components-project
+Oto jak opublikować istniejący projekt z dysku na GitHub:
+
+1. Przygotowanie repozytorium lokalnego
+Jeśli projekt nie ma jeszcze repozytorium git:
+
+bash
+# Przejdź do katalogu projektu
+cd my-web-components-project
+
+# Inicjalizuj repozytorium git
+git init
+
+# Dodaj wszystkie pliki
+git add .
+
+# Zrób pierwszy commit
+git commit -m "Initial commit"
+2. Utwórz puste repozytorium na GitHub
+Zaloguj się na GitHub.com
+
+Kliknij "+" w prawym górnym rogu
+
+Wybierz "New repository"
+
+Wpisz nazwę: my-web-components-project
+
+Zostaw puste wszystkie pola (nie inicjalizuj README, .gitignore, license)
+
+Kliknij "Create repository"
+
+3. Połącz repozytorium lokalne z GitHub
+Po utworzeniu pustego repozytorium, GitHub pokaże instrukcje. Wykonaj:
+
+bash
+# Dodaj zdalne repozytorium (podmień na swój username)
+git remote add origin https://github.com/twoja-nazwa/my-web-components-project.git
+
+# Wypchnij kod do GitHub
+git push -u origin main
+Alternatywnie: Jeśli masz już zdalne repozytorium
+Jeśli już wcześniej dodałeś zdalne repozytorium, możesz je zaktualizować:
+
+bash
+# Zmień URL zdalnego repozytorium
+git remote set-url origin https://github.com/twoja-nazwa/my-web-components-project.git
+
+# Wypchnij zmiany
+git push -u origin main
+Sprawdzenie konfiguracji
+bash
+# Sprawdź zdalne repozytorium
+git remote -v
+
+# Sprawdź status
+git status
+Przydatne uwagi:
+Jeśli masz branch master zamiast main, użyj: git push -u origin master
+
+Jeśli potrzebujesz zmienić nazwę brancha: git branch -M main
+
+Pamiętaj o dodaniu pliku .gitignore jeśli go nie masz
+
+Gotowe! Twój projekt powinien być teraz dostępny na GitHub.
+
+git push -u origin main                                                
+To https://github.com/slawomirszwan/my-web-components-project.git
+ ! [rejected]        main -> main (fetch first)
+error: failed to push some refs to 'https://github.com/slawomirszwan/my-web-components-project.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+Ten błąd występuje, ponieważ zdalne repozytorium na GitHub nie jest puste - prawdopodobnie zostało utworzone z plikami typu README, .gitignore lub LICENSE. Masz kilka opcji:
+
+Opcja 1: Wymuś push (nadpisze zdalne repozytorium)
+Uwaga: Ta opcja usunie wszystkie pliki ze zdalnego repozytorium!
+
+bash
+git push -f origin main
+Opcja 2: Zintegruj zmiany (bezpieczniejsza)
+bash
+# Pobierz zmiany ze zdalnego repozytorium
+git pull origin main
+
+# Rozwiąż ewentualne konflikty, następnie push
+git push origin main
+Jeśli git pull spowoduje konflikty, możesz użyć:
+
+bash
+git pull origin main --allow-unrelated-histories
+Opcja 3: Najbezpieczniejsza - najpierw pobierz i scal
+bash
+# Pobierz zmiany bez automatycznego mergowania
+git fetch origin
+
+# Scal zmiany ręcznie
+git merge origin/main --allow-unrelated-histories
+
+# Rozwiąż ewentualne konflikty, następnie
+git add .
+git commit -m "Merge with remote repository"
+git push origin main
+Zalecane podejście:
+Jeśli chcesz zachować zarówno swoje lokalne pliki jak i te ze zdalnego repozytorium, użyj Opcji 2 lub 3.
+
+Jeśli chcesz całkowicie zastąpić zdalne repozytorium swoimi lokalnymi plikami, użyj Opcji 1.
+
+Którą opcję wolisz?
+
+===============================
+

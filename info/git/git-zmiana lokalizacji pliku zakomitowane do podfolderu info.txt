@@ -1,0 +1,75 @@
+mkdir info
+---
+(zlecane- robi robotę w git), zachowuje historię zmiany, mniej problemów z merge !!!!!!!!!!!!!
+
+Git śledzi zmianę jako "rename" zamiast "delete + add"
+
+git mv nazwa_pliku.txt info/nazwa_pliku.txt
+
+git mv plik.txt info/
+----
+
+
+---------
+jak przesuwasz ręcznie - eksplorator , myszka
+
+mv nazwa_pliku.txt info/nazwa_pliku.txt
+
+
+
+=======================================================================
+jak przenieść zakomitowany plik tekstowy do podfolderu  info co trzeba zrobić w git
+Aby przenieść zakomitowany plik tekstowy do podfolderu info w Git, wykonaj następujące kroki:
+
+1. Utwórz podfolder (jeśli nie istnieje)
+bash
+mkdir info
+2. Przenieś plik używając git mv (zalecane)
+bash
+git mv nazwa_pliku.txt info/nazwa_pliku.txt
+Lub jeśli chcesz przenieść wiele plików:
+
+bash
+# Przenieś pojedynczy plik
+git mv plik.txt info/
+
+# Przenieś wiele plików tekstowych
+git mv *.txt info/
+3. Alternatywnie: ręczne przeniesienie
+bash
+# Przenieś plik ręcznie
+mv nazwa_pliku.txt info/nazwa_pliku.txt
+
+# Usuń ze stage'owania (jeśli był już śledzony)
+git rm nazwa_pliku.txt
+
+# Dodaj nową lokalizację
+git add info/nazwa_pliku.txt
+4. Sprawdź status
+bash
+git status
+Powinieneś zobaczyć coś podobnego:
+
+text
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	renamed:    nazwa_pliku.txt -> info/nazwa_pliku.txt
+5. Zrób commit
+bash
+git commit -m "Move nazwa_pliku.txt to info folder"
+Dlaczego używać git mv?
+Git śledzi zmianę jako "rename" zamiast "delete + add"
+
+Zachowuje historię pliku - możesz śledzić zmiany nawet po przeniesieniu
+
+Lepiej dla współpracy - mniej problemów z merge
+
+Sprawdź historię po przeniesieniu
+bash
+# Pokaż historię pliku (działa nawet po przeniesieniu)
+git log --follow info/nazwa_pliku.txt
+
+# Pokaż szczegóły przeniesienia
+git log --oneline --name-status
+Gotowe! Plik został przeniesiony, a Git prawidłowo śledzi tę zmianę.
+
