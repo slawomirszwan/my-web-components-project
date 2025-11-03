@@ -1,0 +1,62 @@
+git status
+
+git commit -m "aktualizacja"
+
+git push origin main
+
+
+---------------------------
+i potem zmiany przesłac na github
+Tak, po przeniesieniu pliku i zrobieniu commita należy przesłać zmiany na GitHub. Oto pełny proces:
+
+1. Sprawdź status (opcjonalnie)
+bash
+git status
+2. Zrób commit zmian (jeśli jeszcze nie zrobiłeś)
+bash
+git commit -m "Move text file to info folder"
+3. Prześlij zmiany na GitHub
+bash
+git push origin main
+Jeśli używasz brancha master zamiast main:
+
+bash
+git push origin master
+4. Sprawdź czy wszystko poszło poprawnie
+bash
+git status
+Powinieneś zobaczyć:
+
+text
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+Pełna sekwencja komend:
+bash
+# 1. Przenieś plik
+git mv nazwa_pliku.txt info/nazwa_pliku.txt
+
+# 2. Zrób commit
+git commit -m "Move text file to info folder"
+
+# 3. Push na GitHub
+git push origin main
+
+# 4. Sprawdź status
+git status
+Jeśli pojawią się problemy:
+Jeśli push jest odrzucony:
+
+bash
+git pull origin main
+git push origin main
+Jeśli masz konflikty:
+
+bash
+git pull origin main
+# Rozwiąż konflikty ręcznie
+git add .
+git commit -m "Resolve merge conflicts"
+git push origin main
+Po wykonaniu tych kroków, zmiany (przeniesiony plik) będą widoczne w Twoim repozytorium na GitHub.com.
