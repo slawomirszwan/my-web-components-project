@@ -1,0 +1,383 @@
+czy jak w podfolder to też obsłuzy
+
+----------------------------
+vite-config.js 
+
+import { defineConfig } from 'vite'
+
+//z nodejs
+import { resolve } from 'path'
+import { readdirSync } from 'fs'
+
+// Funkcja do automatycznego znajdowania wszystkich plików HTML
+function getHtmlInputs() {
+  const files = readdirSync(__dirname)
+  const htmlFiles = files.filter(file => file.endsWith('.html'))
+  
+  const inputs = {}
+  htmlFiles.forEach(file => {
+    const name = file.replace('.html', '')
+    inputs[name] = resolve(__dirname, file)
+  })
+  
+  return inputs
+}
+
+export default defineConfig({
+  server: {
+    port: 3001, 
+    host: true,
+    open: true
+  },
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    outDir: 'dist',
+    rollupOptions: {
+      input: getHtmlInputs()
+    }
+  }
+})
+
+
+--------------------------------------
+to działa tylko w głownym katalogu !!!!!!!!!!!
+const files = readdirSync(__dirname) // Tylko pliki w głównym folderze
+
+
+--------------------------------------------------------
+rozwiązanie: rekurencyjne szukanie
+
+
+
+import { readdirSync, statSync, resolve } from 'fs'
+import { join } from 'path'
+
+// Funkcja do rekurencyjnego znajdowania wszystkich plików HTML
+function getHtmlInputs() {
+  function findHtmlFiles(dir) {
+    const entries = readdirSync(dir)
+    const htmlFiles = []
+    
+    entries.forEach(entry => {
+      const fullPath = join(dir, entry)
+      const stat = statSync(fullPath)
+      
+      if (stat.isDirectory()) {
+        // Rekurencyjnie przeszukaj podfolder
+        htmlFiles.push(...findHtmlFiles(fullPath))
+      } else if (entry.endsWith('.html')) {
+        htmlFiles.push(fullPath)
+      }
+    })
+    
+    return htmlFiles
+  }
+  
+  const allHtmlFiles = findHtmlFiles(__dirname)
+  const inputs = {}
+  
+  allHtmlFiles.forEach(file => {
+    // Tworzy nazwę na podstawie ścieżki względnej
+    const relativePath = file.replace(__dirname + '/', '')
+    const name = relativePath.replace('.html', '').replace(/\//g, '-')
+    inputs[name] = resolve(file)
+  })
+  
+  return inputs
+}
+
+
+====================================================================================================
+
+
+alternatywnie - użycie glob pattern wyszukiwania
+
+!!!!!!
+dla glob trzeba dodać pakiet
+npm install glob
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+import { globSync } from 'glob'
+
+function getHtmlInputs() {
+  const htmlFiles = globSync('**/*.html', {
+    ignore: ['node_modules/**', 'dist/**']
+  })
+  
+  const inputs = {}
+  htmlFiles.forEach(file => {
+    const name = file.replace('.html', '').replace(/\//g, '-')
+    inputs[name] = resolve(__dirname, file)
+  })
+  
+  return inputs
+}
+
+
+dla 
+src/
+  index.html
+  about.html
+components/
+  header.html
+  footer.html
+
+zwróci
+{
+  'src-index': '/path/to/project/src/index.html',
+  'src-about': '/path/to/project/src/about.html', 
+  'components-header': '/path/to/project/components/header.html',
+  'components-footer': '/path/to/project/components/footer.html'
+}
+
+
+
+============================================================================================================
+czy to będzie dziala dla pliku html w  src/page/
+
+
+=============================
+import { defineConfig } from 'vite'
+import { resolve, join } from 'path'
+import { readdirSync, statSync } from 'fs'
+
+// Funkcja do rekurencyjnego znajdowania wszystkich plików HTML
+function getHtmlInputs() {
+  function findHtmlFiles(dir) {
+    let htmlFiles = []
+    const entries = readdirSync(dir)
+    
+    entries.forEach(entry => {
+      // Pomijaj foldery node_modules i dist
+      if (entry === 'node_modules' || entry === 'dist') return
+      
+      const fullPath = join(dir, entry)
+      const stat = statSync(fullPath)
+      
+      if (stat.isDirectory()) {
+        // Rekurencyjnie przeszukaj podfolder
+        htmlFiles = htmlFiles.concat(findHtmlFiles(fullPath))
+      } else if (entry.endsWith('.html')) {
+        htmlFiles.push(fullPath)
+      }
+    })
+    
+    return htmlFiles
+  }
+  
+  const allHtmlFiles = findHtmlFiles(__dirname)
+  const inputs = {}
+  
+  allHtmlFiles.forEach(file => {
+    // Tworzy unikalną nazwę na podstawie ścieżki względnej
+    const relativePath = file.replace(__dirname + '/', '')
+    const name = relativePath.replace('.html', '').replace(/\//g, '-')
+    inputs[name] = resolve(file)
+  })
+  
+  return inputs
+}
+
+export default defineConfig({
+  server: {
+    port: 3001, 
+    host: true,
+    open: true
+  },
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    outDir: 'dist',
+    rollupOptions: {
+      input: getHtmlInputs()
+    }
+  }
+})
+=============================
+Co się zmieniło:
+findHtmlFiles() - rekurencyjna funkcja przeszukująca podfoldery
+
+statSync() - sprawdza czy entry jest folderem czy plikiem
+
+Pomijanie node_modules i dist - optymalizacja
+
+Unikalne nazwy - zamienia / na - w nazwach  !!!!!
+
+---------
+project/
+├── index.html
+├── about.html
+└── src/
+    └── page/
+        ├── contact.html
+        └── products.html
+
+{
+  'index': '/project/index.html',
+  'about': '/project/about.html',
+  'src-page-contact': '/project/src/page/contact.html',
+  'src-page-products': '/project/src/page/products.html'
+}
+
+=================================================================================================
+Uwaga bezpieczeństwa:
+Dodaj obsługę błędów dla lepszego bezpieczeństwa:
+
+javascript
+function findHtmlFiles(dir) {
+  try {
+    let htmlFiles = []
+    const entries = readdirSync(dir)
+    
+    entries.forEach(entry => {
+      if (entry === 'node_modules' || entry === 'dist') return
+      
+      const fullPath = join(dir, entry)
+      try {
+        const stat = statSync(fullPath)
+        if (stat.isDirectory()) {
+          htmlFiles = htmlFiles.concat(findHtmlFiles(fullPath))
+        } else if (entry.endsWith('.html')) {
+          htmlFiles.push(fullPath)
+        }
+      } catch (err) {
+        console.warn(`Cannot access: ${fullPath}`)
+      }
+    })
+    
+    return htmlFiles
+  } catch (err) {
+    console.error(`Error reading directory: ${dir}`, err)
+    return []
+  }
+}
+Teraz będzie znajdować wszystkie pliki HTML w całym projekcie, włączając te w src/page/ i innych podfolderach.
+
+==========================================================================================
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+
+
+{
+  'basic-examples': 'C:\\Users\\cgpf\\DOKUMENTY\\INFORMATYKA\\Test\\JS\\WebComponents\\wc\\project_vite2\\my-web-components-project\\basic-examples.html',
+  'components-demo': 'C:\\Users\\cgpf\\DOKUMENTY\\INFORMATYKA\\Test\\JS\\WebComponents\\wc\\project_vite2\\my-web-components-project\\components-demo.html',
+  'index — kopia (2)': 'C:\\Users\\cgpf\\DOKUMENTY\\INFORMATYKA\\Test\\JS\\WebComponents\\wc\\project_vite2\\my-web-components-project\\index — kopia (2).html',
+  'index — kopia': 'C:\\Users\\cgpf\\DOKUMENTY\\INFORMATYKA\\Test\\JS\\WebComponents\\wc\\project_vite2\\my-web-components-project\\index — kopia.html',
+  index: 'C:\\Users\\cgpf\\DOKUMENTY\\INFORMATYKA\\Test\\JS\\WebComponents\\wc\\project_vite2\\my-web-components-project\\index.html',
+  index2: 'C:\\Users\\cgpf\\DOKUMENTY\\INFORMATYKA\\Test\\JS\\WebComponents\\wc\\project_vite2\\my-web-components-project\\index2.html',
+  index3: 'C:\\Users\\cgpf\\DOKUMENTY\\INFORMATYKA\\Test\\JS\\WebComponents\\wc\\project_vite2\\my-web-components-project\\index3.html',
+  'material-showcase': 'C:\\Users\\cgpf\\DOKUMENTY\\INFORMATYKA\\Test\\JS\\WebComponents\\wc\\project_vite2\\my-web-components-project\\material-showcase.html',
+  'pixelart-demo': 'C:\\Users\\cgpf\\DOKUMENTY\\INFORMATYKA\\Test\\JS\\WebComponents\\wc\\project_vite2\\my-web-components-project\\pixelart-demo.html'
+}
+
+===================================================
+ale co jesli mam plik html   basic-examples.html w głownym folderze i plik o takiej samej nazwie w /src/pages/basic-examples.html
+Problem: Konflikt nazw - oba pliki otrzymają tę samą klucz w obiekcie inputs, więc drugi nadpisze pierwszy.
+
+Rozwiązania:
+Opcja 1: Użyj pełnej ścieżki względnej (najlepsza)
+javascript
+function getHtmlInputs() {
+  function findHtmlFiles(dir) {
+    let htmlFiles = []
+    const entries = readdirSync(dir)
+    
+    entries.forEach(entry => {
+      if (entry === 'node_modules' || entry === 'dist') return
+      
+      const fullPath = join(dir, entry)
+      const stat = statSync(fullPath)
+      
+      if (stat.isDirectory()) {
+        htmlFiles = htmlFiles.concat(findHtmlFiles(fullPath))
+      } else if (entry.endsWith('.html')) {
+        htmlFiles.push(fullPath)
+      }
+    })
+    
+    return htmlFiles
+  }
+  
+  const allHtmlFiles = findHtmlFiles(__dirname)
+  const inputs = {}
+  
+  allHtmlFiles.forEach(file => {
+    // Użyj pełnej ścieżki względnej jako klucza
+    const relativePath = file.replace(__dirname + '/', '')
+    const name = relativePath.replace('.html', '')
+    inputs[name] = resolve(file)
+  })
+  
+  return inputs
+}
+Wynik:
+
+javascript
+{
+  'basic-examples': '/project/basic-examples.html',
+  'src/pages/basic-examples': '/project/src/pages/basic-examples.html'
+}
+Opcja 2: Zachowaj oryginalne ścieżki z /
+javascript
+allHtmlFiles.forEach(file => {
+  const relativePath = file.replace(__dirname + '/', '')
+  const name = relativePath.replace('.html', '')
+  inputs[name] = resolve(file)
+})
+Wynik:
+
+javascript
+{
+  'basic-examples': '/project/basic-examples.html',
+  'src/pages/basic-examples': '/project/src/pages/basic-examples.html'
+}
+Opcja 3: Użyj unikalnego prefix/suffix
+javascript
+allHtmlFiles.forEach(file => {
+  const relativePath = file.replace(__dirname + '/', '')
+  const dirName = dirname(relativePath)
+  const baseName = relativePath.replace('.html', '')
+  
+  let name = baseName
+  // Jeśli plik jest w podfolderze, dodaj prefix
+  if (dirName !== '.') {
+    name = `subfolder-${baseName}`
+  }
+  
+  inputs[name] = resolve(file)
+})
+Działanie Vite:
+Vite poprawnie obsłuży takie nazwy - wygeneruje osobne pliki w folderze dist:
+
+text
+dist/
+├── basic-examples.html
+├── basic-examples.js
+├── src/
+│   └── pages/
+│       ├── basic-examples.html
+│       └── basic-examples.js
+Zalecane rozwiązanie:
+Użyj Opcji 1 - zachowaj ścieżki z /. Jest najbardziej przejrzyste i łatwe do debugowania:
+
+javascript
+const allHtmlFiles = findHtmlFiles(__dirname)
+const inputs = {}
+
+allHtmlFiles.forEach(file => {
+  const relativePath = file.replace(__dirname + '/', '')
+  const name = relativePath.replace('.html', '')
+  inputs[name] = resolve(file)
+})
+
+return inputs
+Wtedy w konfiguracji Vite będziesz miał jasny podgląd która ścieżka odpowiada któremu plikowi
+
+----------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+

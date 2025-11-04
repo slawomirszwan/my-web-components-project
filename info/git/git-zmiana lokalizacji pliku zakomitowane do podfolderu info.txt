@@ -13,8 +13,22 @@ git mv plik.txt info/
 ---------
 jak przesuwasz ręcznie - eksplorator , myszka
 
+# Przenieś plik ręcznie
 mv nazwa_pliku.txt info/nazwa_pliku.txt
 
+# Usuń ze stage'owania (jeśli był już śledzony)
+git rm nazwa_pliku.txt
+
+# Dodaj nową lokalizację
+git add info/nazwa_pliku.txt
+
+
+
+
+git status
+
+zrobić commit
+git commit -m "move files"
 
 
 =======================================================================

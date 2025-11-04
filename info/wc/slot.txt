@@ -1,0 +1,512 @@
+Tak, Web Components obsługują coś podobnego do children w React, ale w nieco inny sposób. Głównym mechanizmem jest użycie slots (gniazd) w Shadow DOM.
+
+Podstawowa konkoncepcja Slots
+Slots pozwalają na wstawienie treści z light DOM (zwykłego HTML) do shadow DOM (komponentu).
+
+Przykład podstawowy
+Definicja komponentu:
+
+javascript
+
+
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <div>
+        <h2>Nagłówek komponentu</h2>
+        <slot></slot>
+      </div>
+    `;
+  }
+}
+
+customElements.define('my-component', MyComponent);
+Użycie:
+
+html
+
+
+<my-component>
+  <p>To jest treść, która trafi do slotu.</p>
+  <span>I to też</span>
+</my-component>
+W tym przykładzie, wszystko wewnątrz znacznika <my-component> zostanie wstawione w miejsce <slot></slot>.
+
+Nazwane sloty (Named Slots)
+Możesz też mieć wiele slotów, każdy z nazwą.
+
+Definicja komponentu:
+
+javascript
+
+
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <div>
+        <header>
+          <slot name="header"></slot>
+        </header>
+        <main>
+          <slot name="content"></slot>
+        </main>
+        <footer>
+          <slot name="footer"></slot>
+        </footer>
+      </div>
+    `;
+  }
+}
+
+customElements.define('my-component', MyComponent);
+Użycie:
+
+html
+
+
+<my-component>
+  <h1 slot="header">Tytuł</h1>
+  <p slot="content">Treść artykułu...</p>
+  <button slot="footer">Kliknij</button>
+</my-component>
+Dostęp do children/slotted content
+Aby uzyskać dostęp do elementów wslotowanych (odpowiednik children), możesz użyć:
+
+Metoda 1: slot.assignedElements()
+javascript
+
+
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <div>
+        <slot name="content"></slot>
+      </div>
+    `;
+
+    // Poczekaj na renderowanie
+    setTimeout(() => {
+      const slot = this.shadowRoot.querySelector('slot[name="content"]');
+      const assignedElements = slot.assignedElements();
+      console.log(assignedElements); // Tablica elementów wslotowanych
+    });
+  }
+}
+Metoda 2: Zdarzenie slotchange
+javascript
+
+
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <div>
+        <slot name="content"></slot>
+      </div>
+    `;
+
+    const slot = this.shadowRoot.querySelector('slot[name="content"]');
+    slot.addEventListener('slotchange', () => {
+      const assignedElements = slot.assignedElements();
+      console.log('Slot zmieniony:', assignedElements);
+    });
+  }
+}
+Różnice w porównaniu do React children
+Slots są bardziej szablonowe - w React children to dowolna treść, w Web Components musisz określić gdzie ma trafić jaka treść (chyba że użyjesz domyślnego slotu).
+
+Stylowanie - elementy wslotowane są stylowane z light DOM, ale komponent może dostarczyć niektóre style (przy użyciu CSS custom properties lub ::slotted).
+
+Reakcja na zmiany - w React children są dynamiczne, w Web Components musisz obserwować zmiany w slocie (zdarzenie slotchange).
+
+Przykład z dynamiczną obsługą children
+javascript
+
+
+class DynamicList extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <ul>
+        <slot id="items-slot"></slot>
+      </ul>
+    `;
+
+    const slot = this.shadowRoot.getElementById('items-slot');
+    slot.addEventListener('slotchange', () => {
+      const items = slot.assignedElements();
+      items.forEach((item, index) => {
+        // Możesz dodać jakieś zachowanie do każdego elementu
+        item.style.setProperty('--index', index);
+      });
+    });
+  }
+}
+
+customElements.define('dynamic-list', DynamicList);
+Użycie:
+
+html
+
+
+<dynamic-list>
+  <li>Item 1</li>
+  <li>Item 2</li>
+  <li>Item 3</li>
+</dynamic-list>
+Podsumowanie
+Web Components używa slots do przekazywania treści (odpowiednik children w React). Możesz mieć:
+
+Slot domyślny - dla treści bez atrybutu slot
+Nazwane sloty - dla precyzyjnego umieszczania treści
+Dostęp do tych elementów uzyskujesz przez:
+
+slot.assignedElements() - zwraca elementy
+slot.assignedNodes() - zwraca węzły (w tym tekstowe)
+Zdarzenie slotchange - gdy zmienia się zawartość slotu
+Jest to potężny mechanizm, który pozwala na tworzenie komponentów z dowolną treścią, podobnie jak w React.
+
+Tak, Web Components obsługują coś podobnego do children z Reacta, ale w inny sposób. Głównym mechanizmem są slots (gniazda), które pełnią podobną rolę.
+
+Podstawowy mechanizm: Slots
+1. Domyślny slot (podobny do children)
+JavaScript
+
+class MyComponent extends HTMLElement {
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open' })
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <div class="container">
+        <h2>Nagłówek komponentu</h2>
+        <slot></slot> <!-- Tutaj trafią children -->
+      </div>
+    `
+  }
+}
+
+customElements.define('my-component', MyComponent)
+Użycie:
+
+HTML
+
+<my-component>
+  <p>To jest child 1</p>
+  <span>To jest child 2</span>
+  <div>To jest child 3</div>
+</my-component>
+2. Nazwane sloty (named slots)
+JavaScript
+
+class CardComponent extends HTMLElement {
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open' })
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <div class="card">
+        <header class="card-header">
+          <slot name="header">Domyślny nagłówek</slot>
+        </header>
+        <div class="card-content">
+          <slot name="content"></slot>
+        </div>
+        <footer class="card-footer">
+          <slot name="footer"></slot>
+        </footer>
+      </div>
+    `
+  }
+}
+
+customElements.define('card-component', CardComponent)
+Użycie:
+
+HTML
+
+<card-component>
+  <h1 slot="header">Mój tytuł</h1>
+  <div slot="content">
+    <p>Treść karty</p>
+    <button>Przycisk</button>
+  </div>
+  <div slot="footer">
+    Stopka karty
+  </div>
+</card-component>
+Różnice w porównaniu do React children
+🔄 React children:
+React
+
+// React - bezpośredni dostęp do children
+function MyComponent({ children }) {
+  return (
+    <div>
+      <h2>Nagłówek</h2>
+      {children} {/* Children renderowane bezpośrednio */}
+    </div>
+  )
+}
+
+// Użycie
+<MyComponent>
+  <p>Child 1</p>
+  <span>Child 2</span>
+</MyComponent>
+🔄 Web Components slots:
+HTML
+
+<!-- Web Components - przez sloty -->
+<my-component>
+  <p>Child 1</p>
+  <span>Child 2</span>
+</my-component>
+
+<!-- Wewnątrz shadow DOM: -->
+<div>
+  <h2>Nagłówek</h2>
+  <slot></slot> <!-- Children pojawią się tutaj -->
+</div>
+Zaawansowane techniki pracy z "children"
+1. Dynamiczny dostęp do slotted content
+JavaScript
+
+class DynamicComponent extends HTMLElement {
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open' })
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <div>
+        <slot id="main-slot"></slot>
+      </div>
+    `
+
+    // Dostęp do elementów w slocie
+    const slot = this.shadowRoot.getElementById('main-slot')
+    
+    slot.addEventListener('slotchange', () => {
+      const assignedElements = slot.assignedElements()
+      console.log('Elementy w slocie:', assignedElements)
+      
+      // Możesz manipulować children
+      assignedElements.forEach(element => {
+        element.style.color = 'blue'
+      })
+    })
+  }
+}
+
+customElements.define('dynamic-component', DynamicComponent)
+2. Filtrowanie i transformacja children
+JavaScript
+
+class FilterComponent extends HTMLElement {
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open' })
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <div class="filtered-container">
+        <slot></slot>
+      </div>
+    `
+
+    const slot = this.shadowRoot.querySelector('slot')
+    
+    slot.addEventListener('slotchange', () => {
+      const children = slot.assignedElements()
+      
+      // Filtruj tylko przyciski
+      const buttons = children.filter(child => 
+        child.tagName.toLowerCase() === 'button'
+      )
+      
+      buttons.forEach(button => {
+        button.classList.add('filtered-button')
+      })
+    })
+  }
+}
+3. Kompozycja z wieloma slotami
+JavaScript
+
+class LayoutComponent extends HTMLElement {
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open' })
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <div class="layout">
+        <aside class="sidebar">
+          <slot name="sidebar"></slot>
+        </aside>
+        <main class="content">
+          <slot name="content"></slot>
+        </main>
+        <div class="actions">
+          <slot name="actions">
+            <button>Domyślna akcja</button>
+          </slot>
+        </div>
+      </div>
+    `
+  }
+}
+
+customElements.define('layout-component', LayoutComponent)
+Różnice i ograniczenia
+✅ Podobieństwa do React children:
+Możliwość przekazywania dowolnej treści
+Kompozycja komponentów
+Reagowanie na zmiany zawartości
+❌ Różnice/ograniczenia:
+Brak bezpośredniego dostępu jak do props.children
+Stylowanie - dzieci są stylowane z zewnątrz, nie z shadow DOM
+Event delegation - eventy muszą "przebijać się" przez shadow boundary
+Dynamiczne zmiany wymagają ręcznej obsługi slotchange
+Rozwiązania zaawansowane
+1. Obsługa dynamicznych children
+JavaScript
+
+class DynamicChildrenComponent extends HTMLElement {
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open' })
+    this._slot = null
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <div>
+        <slot></slot>
+        <div id="dynamic-children"></div>
+      </div>
+    `
+
+    this._slot = this.shadowRoot.querySelector('slot')
+    this._dynamicContainer = this.shadowRoot.getElementById('dynamic-children')
+    
+    this._setupSlotObserver()
+  }
+
+  _setupSlotObserver() {
+    this._slot.addEventListener('slotchange', () => {
+      this._processChildren()
+    })
+  }
+
+  _processChildren() {
+    const children = this._slot.assignedElements()
+    
+    // Przetwarzanie children
+    children.forEach(child => {
+      if (child.dataset.transform) {
+        this._transformChild(child)
+      }
+    })
+  }
+
+  _transformChild(child) {
+    const cloned = child.cloneNode(true)
+    cloned.classList.add('transformed')
+    this._dynamicContainer.appendChild(cloned)
+  }
+}
+2. Własna implementacja children-like API
+JavaScript
+
+class ReactLikeComponent extends HTMLElement {
+  get children() {
+    const slot = this.shadowRoot.querySelector('slot')
+    return slot ? slot.assignedElements() : []
+  }
+
+  connectedCallback() {
+    this.attachShadow({ mode: 'open' })
+    this.shadowRoot.innerHTML = `
+      <div>
+        <slot></slot>
+      </div>
+    `
+
+    // Symulacja React children API
+    this._slot = this.shadowRoot.querySelector('slot')
+    this._slot.addEventListener('slotchange', () => {
+      this._children = this.children
+      this.onChildrenChange && this.onChildrenChange(this._children)
+    })
+  }
+
+  // Metoda podobna do React.Children.map
+  mapChildren(callback) {
+    return this.children.map(callback)
+  }
+
+  // Filtrowanie children
+  filterChildren(predicate) {
+    return this.children.filter(predicate)
+  }
+}
+
+customElements.define('react-like-component', ReactLikeComponent)
+Praktyczne użycie
+HTML
+
+<react-like-component>
+  <div class="item" data-important="true">Item 1</div>
+  <div class="item">Item 2</div>
+  <div class="item" data-important="true">Item 3</div>
+</react-like-component>
+
+<script>
+  const component = document.querySelector('react-like-component')
+  component.onChildrenChange = (children) => {
+    const importantItems = children.filter(child => 
+      child.dataset.important === 'true'
+    )
+    console.log('Wažne elementy:', importantItems)
+  }
+</script>
+Podsumowanie
+Web Components używa slotów zamiast children, ale osiąga podobne cele:
+
+✅ Kompozycja komponentów - przez <slot>
+✅ Przekazywanie treści - przez named slots
+✅ Reagowanie na zmiany - przez event slotchange
+✅ Manipulacja zawartością - przez assignedElements()
+Chociaż API jest inne niż w React, jest równie potężne i po przyswojeniu staje się bardzo intuicyjne w użyciu.

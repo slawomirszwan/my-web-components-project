@@ -4,6 +4,17 @@ git commit -m "aktualizacja"
 
 git push origin main
 
+=========================================
+jesli konflikty to może coś się zmieniło na github
+
+Jeśli masz konflikty:
+najpierw pull wersję z github ,uwspólniamy i pushujemy
+
+git pull origin main
+# Rozwiąż konflikty ręcznie
+git add .
+git commit -m "Resolve merge conflicts"
+git push origin main
 
 ---------------------------
 i potem zmiany przesłac na github

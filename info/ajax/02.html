@@ -1,0 +1,901 @@
+Aby dodać własny webservice do aplikacji Vite, możemy skorzystać z wbudowanego serwera deweloperskiego Vite, który obsługuje proxy, lub dodać własny serwer Express. Poniżej pokażę oba podejścia.
+
+1. Użycie proxy w Vite do własnego backendu
+Jeśli masz już uruchomiony serwer backendowy na innym porcie, możesz skonfigurować proxy w Vite, aby przekierować żądania do tego serwera.
+
+Konfiguracja Vite (vite.config.js)
+javascript
+
+
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001', // adres twojego serwera backendowego
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
+})
+Wtedy we frontendzie możesz wysyłać żądania do /api, a Vite przekieruje je na serwer backendowy.
+
+2. Stworzenie prostego serwera Express w projekcie Vite
+Możesz również stworzyć własny serwer Express w katalogu projektu i uruchamiać go razem z Vite.
+
+Struktura projektu
+
+
+project-root/
+├── server/
+│   └── index.js
+├── src/
+│   └── ...
+├── index.html
+└── vite.config.js
+Serwer Express (server/index.js)
+javascript
+
+
+const express = require('express')
+const cors = require('cors')
+
+const app = express()
+const port = 3001
+
+// Middleware
+app.use(cors())
+app.use(express.json())
+
+// Przykładowe dane
+let users = [
+  { id: 1, name: 'John Doe', email: 'john@example.com' },
+  { id: 2, name: 'Jane Doe', email: 'jane@example.com' }
+]
+
+// Routes
+app.get('/users', (req, res) => {
+  res.json(users)
+})
+
+app.get('/users/:id', (req, res) => {
+  const user = users.find(u => u.id === parseInt(req.params.id))
+  if (!user) return res.status(404).send('User not found')
+  res.json(user)
+})
+
+app.post('/users', (req, res) => {
+  const { name, email } = req.body
+  const newUser = {
+    id: users.length + 1,
+    name,
+    email
+  }
+  users.push(newUser)
+  res.status(201).json(newUser)
+})
+
+app.put('/users/:id', (req, res) => {
+  const user = users.find(u => u.id === parseInt(req.params.id))
+  if (!user) return res.status(404).send('User not found')
+
+  user.name = req.body.name || user.name
+  user.email = req.body.email || user.email
+
+  res.json(user)
+})
+
+app.delete('/users/:id', (req, res) => {
+  const index = users.findIndex(u => u.id === parseInt(req.params.id))
+  if (index === -1) return res.status(404).send('User not found')
+
+  users.splice(index, 1)
+  res.status(204).send()
+})
+
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`)
+})
+Package.json scripts
+Aby uruchomić zarówno serwer backendowy, jak i frontendowy, możesz dodać skrypty w package.json:
+
+json
+
+
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "dev:full": "concurrently \"npm run server\" \"npm run dev\""
+  }
+}
+Wtedy uruchomienie npm run dev:full uruchomi zarówno serwer backendowy, jak i frontendowy. Do tego potrzebujesz pakietu concurrently:
+
+bash
+
+
+npm install -D concurrently
+3. Użycie Vite jako middleware w Express
+Innym podejściem jest użycie Vite jako middleware w Express, co pozwala na serwowanie zarówno frontendu, jak i backendu z jednego serwera.
+
+Serwer Express z Vite (server/index.js)
+javascript
+
+
+const express = require('express')
+const { createServer } = require('vite')
+
+const app = express()
+const port = 3000
+
+async function startServer() {
+  // Utwórz serwer Vite w trybie middleware
+  const vite = await createServer({
+    server: { middlewareMode: true },
+    appType: 'spa'
+  })
+
+  // Użyj middleware Vite
+  app.use(vite.middlewares)
+
+  // Twoje endpointy API
+  app.get('/api/users', (req, res) => {
+    res.json([{ id: 1, name: 'John Doe' }])
+  })
+
+  // Obsłuż SPA - zwróć index.html dla wszystkich innych żądań
+  app.get('*', (req, res) => {
+    res.sendFile(require('path').join(__dirname, '../index.html'))
+  })
+
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`)
+  })
+}
+
+startServer()
+```__
+W tym przypadku musisz dostosować strukturę projektu, aby serwer Express mógł serwować plik index.html z katalogu głównego.
+
+4. Przykład użycia API w frontendzie
+Niezależnie od wybranej metody, frontend może używać API w ten sposób:
+
+src/services/api.js
+javascript
+
+
+const API_BASE = import.meta.env.DEV ? '/api' : 'http://localhost:3001'
+
+export class ApiService {
+  static async getUsers() {
+    const response = await fetch(`${API_BASE}/users`)
+    return response.json()
+  }
+
+  static async getUser(id) {
+    const response = await fetch(`${API_BASE}/users/${id}`)
+    return response.json()
+  }
+
+  static async createUser(user) {
+    const response = await fetch(`${API_BASE}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(user)
+    })
+    return response.json()
+  }
+
+  static async updateUser(id, user) {
+    const response = await fetch(`${API_BASE}/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(user)
+    })
+    return response.json()
+  }
+
+  static async deleteUser(id) {
+    const response = await fetch(`${API_BASE}/users/${id}`, {
+      method: 'DELETE'
+    })
+    return response
+  }
+}
+Użycie w komponencie
+javascript
+
+
+import { ApiService } from './services/api.js'
+
+class UserList {
+  constructor() {
+    this.users = []
+    this.container = document.getElementById('user-list')
+    this.loadUsers()
+  }
+
+  async loadUsers() {
+    try {
+      this.users = await ApiService.getUsers()
+      this.render()
+    } catch (error) {
+      console.error('Failed to load users:', error)
+    }
+  }
+
+  render() {
+    this.container.innerHTML = this.users.map(user => `
+      <div class="user">
+        <h3>${user.name}</h3>
+        <p>${user.email}</p>
+      </div>
+    `).join('')
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  new UserList()
+})
+Podsumowanie
+Masz kilka opcji do wyboru:
+
+Proxy w Vite - jeśli masz już backend i chcesz go używać w development.
+Osobny serwer Express - uruchamiany równolegle z Vite.
+Express z Vite jako middleware - jeden serwer dla frontendu i backendu.
+Wybierz podejście, które najlepiej pasuje do twoich potrzeb.
+
+Dodanie własnego webservice do aplikacji Vite jest doskonałym pomysłem! Pokażę Ci kilka podejść - od najprostszego do produkcyjnego.
+
+1. Prosty serwer Express z Vite
+Struktura projektu
+text
+
+project-root/
+├── server/
+│   ├── index.js
+│   └── api/
+│       ├── users.js
+│       └── posts.js
+├── src/
+│   └── ...
+├── package.json
+└── vite.config.js
+Serwer Express (server/index.js)
+JavaScript
+
+import express from 'express'
+import cors from 'cors'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const app = express()
+const PORT = process.env.PORT || 3001
+
+// Middleware
+app.use(cors())
+app.use(express.json())
+app.use(express.static(path.join(__dirname, '../dist')))
+
+// Mock data
+let users = [
+  { id: 1, name: 'Jan Kowalski', email: 'jan@example.com' },
+  { id: 2, name: 'Anna Nowak', email: 'anna@example.com' },
+  { id: 3, name: 'Piotr Wiśniewski', email: 'piotr@example.com' }
+]
+
+let posts = [
+  { id: 1, title: 'Pierwszy post', content: 'Treść pierwszego posta', authorId: 1 },
+  { id: 2, title: 'Drugi post', content: 'Treść drugiego posta', authorId: 2 }
+]
+
+// Routes
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() })
+})
+
+// Users endpoints
+app.get('/api/users', (req, res) => {
+  res.json(users)
+})
+
+app.get('/api/users/:id', (req, res) => {
+  const user = users.find(u => u.id === parseInt(req.params.id))
+  if (!user) return res.status(404).json({ error: 'User not found' })
+  res.json(user)
+})
+
+app.post('/api/users', (req, res) => {
+  const newUser = {
+    id: users.length + 1,
+    name: req.body.name,
+    email: req.body.email
+  }
+  users.push(newUser)
+  res.status(201).json(newUser)
+})
+
+// Posts endpoints
+app.get('/api/posts', (req, res) => {
+  const postsWithAuthors = posts.map(post => ({
+    ...post,
+    author: users.find(user => user.id === post.authorId)
+  }))
+  res.json(postsWithAuthors)
+})
+
+app.post('/api/posts', (req, res) => {
+  const newPost = {
+    id: posts.length + 1,
+    title: req.body.title,
+    content: req.body.content,
+    authorId: req.body.authorId
+  }
+  posts.push(newPost)
+  res.status(201).json(newPost)
+})
+
+// Serve SPA (dla produkcji)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'))
+})
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+  console.log(`📊 API available at http://localhost:${PORT}/api`)
+})
+2. Konfiguracja package.json dla development
+package.json
+JSON
+
+{
+  "name": "vite-fullstack-app",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
+    "start": "npm run build && npm run server"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "concurrently": "^8.2.0"
+  }
+}
+Zainstaluj concurrently:
+
+Bash
+
+npm install -D concurrently
+3. Serwis API dla frontendu
+src/services/local-api.js
+JavaScript
+
+const API_BASE = 'http://localhost:3001/api'
+
+export class LocalApiService {
+  static async request(endpoint, options = {}) {
+    const url = `${API_BASE}${endpoint}`
+    
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        ...options,
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('API Request failed:', error)
+      throw error
+    }
+  }
+
+  // Users
+  static async getUsers() {
+    return this.request('/users')
+  }
+
+  static async getUser(id) {
+    return this.request(`/users/${id}`)
+  }
+
+  static async createUser(userData) {
+    return this.request('/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    })
+  }
+
+  // Posts
+  static async getPosts() {
+    return this.request('/posts')
+  }
+
+  static async createPost(postData) {
+    return this.request('/posts', {
+      method: 'POST',
+      body: JSON.stringify(postData),
+    })
+  }
+
+  // Health check
+  static async healthCheck() {
+    return this.request('/health')
+  }
+}
+4. Przykład użycia w komponencie
+src/pages/dashboard/main.js
+JavaScript
+
+import { LocalApiService } from '../../services/local-api.js'
+
+class Dashboard {
+  constructor() {
+    this.container = document.getElementById('app')
+    this.init()
+  }
+
+  async init() {
+    await this.checkHealth()
+    await this.loadDashboardData()
+    this.setupEventListeners()
+  }
+
+  async checkHealth() {
+    try {
+      const health = await LocalApiService.healthCheck()
+      this.showNotification(`Serwer działa: ${health.status}`, 'success')
+    } catch (error) {
+      this.showNotification('Serwer nie odpowiada! Upewnij się, że serwer jest uruchomiony.', 'error')
+    }
+  }
+
+  async loadDashboardData() {
+    try {
+      const [users, posts] = await Promise.all([
+        LocalApiService.getUsers(),
+        LocalApiService.getPosts()
+      ])
+      
+      this.renderDashboard(users, posts)
+    } catch (error) {
+      this.showError('Błąd ładowania danych')
+    }
+  }
+
+  renderDashboard(users, posts) {
+    this.container.innerHTML = `
+      <div class="dashboard">
+        <header class="dashboard-header">
+          <h1>Panel zarządzania</h1>
+          <button id="refresh-btn" class="btn btn-primary">Odśwież</button>
+        </header>
+
+        <div class="stats">
+          <div class="stat-card">
+            <h3>Użytkownicy</h3>
+            <div class="stat-number">${users.length}</div>
+          </div>
+          <div class="stat-card">
+            <h3>Posty</h3>
+            <div class="stat-number">${posts.length}</div>
+          </div>
+        </div>
+
+        <div class="sections">
+          <section class="section">
+            <h2>Użytkownicy</h2>
+            <div id="users-list" class="users-list">
+              ${this.renderUsersList(users)}
+            </div>
+            <form id="add-user-form" class="add-form">
+              <input type="text" name="name" placeholder="Imię i nazwisko" required>
+              <input type="email" name="email" placeholder="Email" required>
+              <button type="submit">Dodaj użytkownika</button>
+            </form>
+          </section>
+
+          <section class="section">
+            <h2>Ostatnie posty</h2>
+            <div id="posts-list">
+              ${this.renderPostsList(posts)}
+            </div>
+          </section>
+        </div>
+      </div>
+    `
+  }
+
+  renderUsersList(users) {
+    return users.map(user => `
+      <div class="user-item">
+        <strong>${user.name}</strong>
+        <span>${user.email}</span>
+      </div>
+    `).join('')
+  }
+
+  renderPostsList(posts) {
+    return posts.map(post => `
+      <div class="post-item">
+        <h4>${post.title}</h4>
+        <p>${post.content}</p>
+        <small>Autor: ${post.author?.name || 'Nieznany'}</small>
+      </div>
+    `).join('')
+  }
+
+  setupEventListeners() {
+    // Refresh button
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+      this.loadDashboardData()
+    })
+
+    // Add user form
+    document.getElementById('add-user-form').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      await this.handleAddUser(e.target)
+    })
+  }
+
+  async handleAddUser(form) {
+    const formData = new FormData(form)
+    const userData = {
+      name: formData.get('name'),
+      email: formData.get('email')
+    }
+
+    try {
+      await LocalApiService.createUser(userData)
+      this.showNotification('Użytkownik dodany pomyślnie!', 'success')
+      form.reset()
+      await this.loadDashboardData() // Refresh data
+    } catch (error) {
+      this.showNotification('Błąd podczas dodawania użytkownika', 'error')
+    }
+  }
+
+  showNotification(message, type) {
+    const notification = document.createElement('div')
+    notification.className = `notification ${type}`
+    notification.textContent = message
+    
+    document.body.appendChild(notification)
+    
+    setTimeout(() => {
+      notification.remove()
+    }, 3000)
+  }
+
+  showError(message) {
+    this.container.innerHTML = `
+      <div class="error-state">
+        <h2>😕 Błąd aplikacji</h2>
+        <p>${message}</p>
+        <button onclick="location.reload()">Spróbuj ponownie</button>
+        <div class="help">
+          <p><strong>Upewnij się, że:</strong></p>
+          <ul>
+            <li>Serwer jest uruchomiony (npm run server)</li>
+            <li>Serwer działa na porcie 3001</li>
+            <li>Masz połączenie z internetem</li>
+          </ul>
+        </div>
+      </div>
+    `
+  }
+}
+
+// CSS dla dashboard
+const styles = `
+  <style>
+    .dashboard {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #2563eb;
+    }
+    
+    .sections {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    
+    .section {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .user-item, .post-item {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .add-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    .add-form input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+    }
+    
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+    
+    .notification {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 1rem;
+      border-radius: 4px;
+      color: white;
+      z-index: 1000;
+    }
+    
+    .notification.success { background: #10b981; }
+    .notification.error { background: #ef4444; }
+    
+    .error-state {
+      text-align: center;
+      padding: 3rem;
+    }
+    
+    .help {
+      text-align: left;
+      max-width: 400px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #f3f4f6;
+      border-radius: 8px;
+    }
+  </style>
+`
+
+// Dodaj style do dokumentu
+document.head.insertAdjacentHTML('beforeend', styles)
+
+// Inicjalizacja
+document.addEventListener('DOMContentLoaded', () => {
+  new Dashboard()
+})
+5. Zaawansowany serwer z bazą danych (SQLite)
+server/advanced-server.js
+JavaScript
+
+import express from 'express'
+import cors from 'cors'
+import sqlite3 from 'sqlite3'
+import { open } from 'sqlite'
+
+const app = express()
+const PORT = 3001
+
+// Middleware
+app.use(cors())
+app.use(express.json())
+
+// Inicjalizacja bazy danych
+let db
+async function initializeDatabase() {
+  db = await open({
+    filename: './database.sqlite',
+    driver: sqlite3.Database
+  })
+
+  // Stwórz tabele
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    
+    CREATE TABLE IF NOT EXISTS posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      author_id INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(author_id) REFERENCES users(id)
+    );
+  `)
+
+  // Wstaw przykładowe dane
+  const userCount = await db.get('SELECT COUNT(*) as count FROM users')
+  if (userCount.count === 0) {
+    await db.run(
+      'INSERT INTO users (name, email) VALUES (?, ?), (?, ?)',
+      ['Jan Kowalski', 'jan@example.com', 'Anna Nowak', 'anna@example.com']
+    )
+  }
+}
+
+// Routes
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await db.all('SELECT * FROM users ORDER BY created_at DESC')
+    res.json(users)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/users', async (req, res) => {
+  try {
+    const { name, email } = req.body
+    const result = await db.run(
+      'INSERT INTO users (name, email) VALUES (?, ?)',
+      [name, email]
+    )
+    const newUser = await db.get('SELECT * FROM users WHERE id = ?', result.lastID)
+    res.status(201).json(newUser)
+  } catch (error) {
+    if (error.message.includes('UNIQUE constraint failed')) {
+      res.status(400).json({ error: 'Email already exists' })
+    } else {
+      res.status(500).json({ error: error.message })
+    }
+  }
+})
+
+app.get('/api/posts', async (req, res) => {
+  try {
+    const posts = await db.all(`
+      SELECT p.*, u.name as author_name 
+      FROM posts p 
+      LEFT JOIN users u ON p.author_id = u.id 
+      ORDER BY p.created_at DESC
+    `)
+    res.json(posts)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/posts', async (req, res) => {
+  try {
+    const { title, content, authorId } = req.body
+    const result = await db.run(
+      'INSERT INTO posts (title, content, author_id) VALUES (?, ?, ?)',
+      [title, content, authorId]
+    )
+    const newPost = await db.get(`
+      SELECT p.*, u.name as author_name 
+      FROM posts p 
+      LEFT JOIN users u ON p.author_id = u.id 
+      WHERE p.id = ?
+    `, result.lastID)
+    res.status(201).json(newPost)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Uruchom serwer
+initializeDatabase().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Advanced server running on http://localhost:${PORT}`)
+  })
+})
+Zainstaluj zależności:
+
+Bash
+
+npm install sqlite3 sqlite
+6. Uruchomienie aplikacji
+Development (serwer + frontend):
+Bash
+
+npm run dev:full
+Produkcja:
+Bash
+
+npm run build
+npm run server
+7. Konfiguracja proxy dla development
+vite.config.js
+JavaScript
+
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  }
+})
+W development możesz teraz używać /api bez pełnego URL:
+
+JavaScript
+
+// W development działa przez proxy, w production bezpośrednio
+const API_BASE = import.meta.env.DEV ? '/api' : 'http://localhost:3001/api'
+Podsumowanie
+To podejście daje Ci:
+
+✅ Pełną kontrolę nad API
+✅ Mock data dla development
+✅ Prawdziwą bazę danych gdy potrzebujesz
+✅ Hot reload dla frontendu
+✅ CORS już skonfigurowane
+✅ Gotowe endpointy REST API
+Zalety własnego webservice:
+
+Szybszy development (nie zależysz od zewnętrznych API)
+Łatwe testowanie
+Pełna kontrola nad danymi
+Możliwość szybkich zmian w API
+Idealne dla prototypów i małych aplikacji
+To doskonałe rozwiązanie dla projektów, gdzie chcesz mieć pełną stack aplikację w jednym repozytorium!

@@ -1,0 +1,511 @@
+konfiguracja vite obsługująca wiele plików punktu wejścia html
+
+
+
+Aby skonfigurować Vite do obsługi wielu plików HTML jako punktów wejścia, 
+możemy użyć wtyczki vite-plugin-html 
+lub po prostu skonfigurować wiele punktów wejścia w konfiguracji Vite. 
+
+
+Jednak Vite domyślnie obsługuje tylko jeden plik HTML (index.html) w katalogu głównym. 
+Aby mieć wiele plików HTML, musimy skonfigurować wiele punktów wejścia.
+
+Od Vite 2.x, możemy skonfigurować wiele punktów wejścia, 
+ustawiając opcję build.rollupOptions.input jako obiekt, gdzie klucze to nazwy, a wartości to ścieżki do plików HTML.
+
+Oto przykładowa konfiguracja:
+
+Umieść swoje pliki HTML w katalogu projektu (np. w katalogu głównym lub w src). Dla przykładu, załóżmy, że mamy:
+
+index.html
+about.html
+W pliku vite.config.js skonfiguruj wejścia:
+
+javascript
+
+
+import { defineConfig } from 'vite'
+import { resolve } from 'path'
+
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        about: resolve(__dirname, 'about.html')
+      }
+    }
+  }
+})
+Jeśli masz więcej plików, możesz je dodać w podobny sposób.
+
+Upewnij się, że w każdym pliku HTML masz odpowiednie odwołania do skryptów i stylów. Na przykład, w about.html powinno być:
+
+Ale jeśli chcesz, aby Vite automatycznie wstrzykiwał skrypty, możesz użyć tagu bez podawania src, ale wtedy musisz mieć oddzielne pliki JS dla każdego punktu wejścia.
+
+Alternatywnie, możesz użyć wtyczki vite-plugin-html dla bardziej zaawansowanych funkcji, ale do podstawowych przypadków wystarczy konfiguracja Rollup.
+
+Uruchom vite build, a w katalogu dist otrzymasz skompilowane pliki dla każdego z punktów wejścia.
+
+Uwaga: W trybie development, Vite domyślnie uruchamia się z index.html. Aby uzyskać dostęp do about.html, musisz przejść bezpośrednio pod adres http://localhost:3000/about.html (lub inny port). Vite serwuje wszystkie pliki HTML w katalogu głównym.
+
+Jeśli chcesz, aby w trybie development Vite automatycznie uruchamiał się z wieloma serwerami lub przekierowaniami, to nie jest to standardowe zachowanie. Możesz jednak skorzystać z wtyczki vite-plugin-html lub skonfigurować serwer developmentowy, aby obsługiwał SPA (Single Page Application) z przekierowaniami, ale w przypadku wielu plików HTML po prostu odwiedzasz bezpośrednio ich adresy.
+
+Jeśli potrzebujesz, aby każdy plik HTML miał własny skrypt wejściowy, upewnij się, że w każdym pliku HTML jest tag script z type="module", który ładuje odpowiedni plik JavaScript.
+
+Przykład struktury plików:
+
+index.html
+about.html
+src/
+main.js (dla index.html)
+about.js (dla about.html)
+W index.html:
+
+W about.html:
+
+W vite.config.js, jak powyżej.
+
+To powinno działać.
+
+Aby skonfigurować Vite do obsługi wielu plików HTML jako punktów wejścia, wykonaj następujące kroki:
+
+1. Struktura projektu
+text
+
+project-root/
+├── src/
+│   ├── pages/
+│   │   ├── index/
+│   │   │   └── main.js
+│   │   └── about/
+│   │       └── main.js
+├── public/
+│   └── shared-assets/
+├── index.html
+├── about.html
+└── vite.config.js
+2. Konfiguracja Vite (vite.config.js)
+JavaScript
+
+import { defineConfig } from 'vite'
+import { resolve } from 'path'
+
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        about: resolve(__dirname, 'about.html'),
+        // Dodaj kolejne pliki HTML tutaj
+      },
+    },
+  },
+  server: {
+    // Opcjonalnie: konfiguracja serwera deweloperskiego
+    open: '/index.html', // Otwórz domyślny plik
+  },
+})
+3. Przykładowe pliki HTML
+index.html
+
+HTML
+
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Strona Główna</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/pages/index/main.js"></script>
+  </body>
+</html>
+about.html
+
+HTML
+
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>O Nas</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/pages/about/main.js"></script>
+  </body>
+</html>
+4. Pliki JavaScript (opcjonalnie)
+src/pages/index/main.js
+
+JavaScript
+
+import '/src/styles/index.css'
+
+// Kod specyficzny dla strony głównej
+console.log('Strona główna załadowana')
+src/pages/about/main.js
+
+JavaScript
+
+import '/src/styles/about.css'
+
+// Kod specyficzny dla strony "O nas"
+console.log('Strona "O nas" załadowana')
+5. Uruchomienie
+Bash
+
+# Development
+npm run dev
+
+# Build produkcyjny
+npm run build
+Kluczowe elementy konfiguracji:
+Multi-entry build: Konfiguracja build.rollupOptions.input jako obiektu z ścieżkami do plików HTML
+Struktura katalogów: Oddzielne katalogi dla każdej strony z własnymi zasobami
+Współdzielone zasoby: Pliki w katalogu public są serwowane pod rootem
+Dodatkowe uwagi:
+Każdy plik HTML musi mieć własny skrypt wejściowy
+Możesz używać wspólnych komponentów i stylów między stronami
+W trybie development wszystkie pliki HTML są dostępne pod ich bezpośrednimi adresami
+Wersja produkcyjna generuje oddzielne bundlle dla każdej strony
+Rozszerzenia konfiguracji:
+Użyj resolve.alias dla lepszej obsługi ścieżek
+Dodaj plugin do preprocessingu HTML jeśli potrzebujesz
+Skonfiguruj osobne optymalizacje dla różnych stron
+Ta konfiguracja pozwala na utrzymanie odseparowanych aplikacji/staw w ramach jednego projektu Vite z optymalizacją budowania i współdzieleniem zasobów.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+Tak, można obsłużyć pliki HTML z folderu src/pages w Vite, ale wymaga to dodatkowej konfiguracji. Jest to praktyczne i stosowane, szczególnie w projektach, które mają wiele stron (tzw. multi-page application). Oto jak to zrobić:
+
+1. Zmiana struktury projektu
+Przenosimy pliki HTML do folderu src/pages:
+
+
+
+project-root/
+├── src/
+│   ├── pages/
+│   │   ├── index/
+│   │   │   ├── index.html
+│   │   │   └── main.js
+│   │   └── about/
+│   │       ├── about.html
+│   │       └── main.js
+├── public/
+│   └── shared-assets/
+└── vite.config.js
+2. Konfiguracja Vite (vite.config.js)
+Musimy dynamicznie ustawić wejścia (input) dla Rollup na podstawie plików HTML w src/pages. Możemy to zrobić za pomocą glob, na przykład przy użyciu glob lub fast-glob.
+
+Zainstaluj fast-glob:
+
+bash
+
+
+npm install --save-dev fast-glob
+Następnie w vite.config.js:
+
+javascript
+
+
+import { defineConfig } from 'vite'
+import { resolve } from 'path'
+import fg from 'fast-glob'
+
+// Pobieramy wszystkie pliki HTML z folderu src/pages
+const htmlFiles = fg.sync(['src/pages/**/*.html'])
+
+// Tworzymy obiekt wejściowy dla Rollup
+const inputEntries = htmlFiles.reduce((entries, file) => {
+  // Nazwa entry to ścieżka względem 'src/pages' bez rozszerzenia
+  const name = file.replace('src/pages/', '').replace(/\.html$/, '')
+  entries[name] = resolve(__dirname, file)
+  return entries
+}, {})
+
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: inputEntries,
+      // Opcjonalnie: ustawienie katalogu wyjściowego dla assetów
+      output: {
+        assetFileNames: (assetInfo) => {
+          let extType = assetInfo.name.split('.')[1]
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+            extType = 'images'
+          }
+          return `assets/${extType}/[name]-[hash][extname]`
+        },
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+      },
+    },
+    // Ustawienie katalogu wyjściowego na 'dist' (domyślnie) i czyszczenie
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
+  server: {
+    // Serwowanie z katalogu src/pages jako root
+    open: '/index.html', // Możesz zmienić na inną stronę startową
+  },
+  // Ustawienie publicznego katalogu na 'public'
+  publicDir: 'public',
+})
+```__
+3. Dostosowanie ścieżek w plikach HTML
+W plikach HTML w src/pages musimy dostosować ścieżki do skryptów i zasobów. Ponieważ pliki HTML są teraz w src/pages, a Vite serwuje z roota, możemy używać bezwzględnych ścieżek lub względnych, ale trzeba wziąć pod uwagę strukturę.
+
+Na przykład w src/pages/index/index.html:
+
+html
+
+
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Strona Główna</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <!-- Skrypt jest w tym samym katalogu co HTML -->
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
+4. Uruchomienie
+npm run dev - uruchomi serwer deweloperski. Pliki HTML będą dostępne pod ścieżkami zgodnymi z ich lokalizacją w src/pages. Na przykład:
+
+Strona główna: http://localhost:3000/index/index.html (jeśli mamy src/pages/index/index.html)
+Strona about: http://localhost:3000/about/about.html (jeśli mamy src/pages/about/about.html)
+npm run build - zbuduje projekt do katalogu dist z zachowaniem struktury folderów.
+
+5. Uproszczenie ścieżek URL
+Jeśli chcesz, aby strona główna była dostępna pod http://localhost:3000/index.html (bez podwójnego index), możesz zmienić strukturę plików:
+
+
+
+src/
+  pages/
+    index.html
+    about.html
+    index/
+      main.js
+    about/
+      main.js
+Wtedy w index.html odwołanie do skryptu będzie: src="./index/main.js".
+
+A w konfiguracji Vite, zmień glob na ['src/pages/*.html'] i odpowiednio przetworz nazwy.*
+
+Czy to praktyczne i stosowane?
+Tak, takie podejście jest praktyczne i stosowane w wielu projektach. Pozwala ono na:
+
+Modularność: Każda strona ma swój własny katalog z zasobami.
+Współdzielenie zasobów: Wspólne biblioteki i style można importować w każdym entry point.
+Łatwe zarządzanie: Dodawanie nowych stron jest proste - wystarczy dodać nowy katalog z plikiem HTML i skryptem.
+Wadą jest to, że w trybie deweloperskim URL mogą być dłuższe (ze względu na strukturę katalogów). Można to rozwiązać za pomocą konfiguracji serwera deweloperskiego lub przez zmianę struktury plików.
+
+Alternatywne podejście
+Innym popularnym podejściem jest trzymanie plików HTML w katalogu głównym (obok src), a w src tylko skrypty i style. Wtedy konfiguracja jest prostsza, ale tracimy modularność w obrębie src.
+
+Ostatecznie, wybór zależy od preferencji i wymagań projektu.
+
+Tak, można obsługiwać pliki HTML z folderu src/pages i jest to praktyczne oraz stosowane w wielu projektach.
+
+Konfiguracja Vite dla src/pages/
+1. Struktura projektu
+text
+
+project-root/
+├── src/
+│   ├── pages/
+│   │   ├── home/
+│   │   │   ├── index.html
+│   │   │   ├── main.js
+│   │   │   └── style.css
+│   │   ├── about/
+│   │   │   ├── index.html
+│   │   │   ├── main.js
+│   │   │   └── style.css
+│   │   └── contact/
+│   │       ├── index.html
+│   │       ├── main.js
+│   │       └── style.css
+├── public/
+├── package.json
+└── vite.config.js
+2. Konfiguracja Vite (vite.config.js)
+JavaScript
+
+import { defineConfig } from 'vite'
+import { resolve } from 'path'
+import { glob } from 'glob'
+
+// Dynamiczne znajdowanie wszystkich plików HTML w src/pages
+const htmlFiles = glob.sync('src/pages/**/*.html')
+
+const inputEntries = {}
+htmlFiles.forEach(file => {
+  const name = file.replace('src/pages/', '').replace(/\.html$/, '')
+  inputEntries[name] = resolve(__dirname, file)
+})
+
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: inputEntries,
+      output: {
+        // Organizacja output w folderze dist
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const extType = assetInfo.name.split('.')[1]
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+            return 'assets/images/[name]-[hash][extname]'
+          }
+          if (/css/i.test(extType)) {
+            return 'assets/css/[name]-[hash][extname]'
+          }
+          return 'assets/[name]-[hash][extname]'
+        }
+      }
+    },
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
+  server: {
+    open: '/home/index.html' // Otwórz domyślną stronę
+  },
+  publicDir: 'public'
+})
+3. Alternatywna konfiguracja z ręczną definicją
+JavaScript
+
+import { defineConfig } from 'vite'
+import { resolve } from 'path'
+
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        'home/index': resolve(__dirname, 'src/pages/home/index.html'),
+        'about/index': resolve(__dirname, 'src/pages/about/index.html'),
+        'contact/index': resolve(__dirname, 'src/pages/contact/index.html'),
+      }
+    }
+  }
+})
+Przykładowy plik HTML w src/pages/
+src/pages/home/index.html
+
+HTML
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strona Główna</title>
+</head>
+<body>
+  <div id="app">
+    <h1>Witaj na stronie głównej</h1>
+  </div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
+Zalety umieszczania HTML w src/pages/
+✅ Praktyczne korzyści:
+Organizacja kodu - Wszystkie źródła w jednym miejscu
+Importowanie komponentów - Łatwe importowanie komponentów z src/
+Hot Module Replacement - Lepsza integracja z HMR
+Przetwarzanie przez Vite - HTML może być przetwarzany przez pluginy
+Lepsza struktura projektu - Logiczne grupowanie stron
+✅ Popularne przypadki użycia:
+Aplikacje multi-page (MPA)
+Strony marketingowe z różnymi landing pages
+Projekty z wieloma niezależnymi aplikacjami
+Strony z różnymi tematami/stylami
+Rozszerzona konfiguracja z pluginami
+JavaScript
+
+import { defineConfig } from 'vite'
+import { resolve } from 'path'
+import { createHtmlPlugin } from 'vite-plugin-html'
+
+export default defineConfig({
+  plugins: [
+    createHtmlPlugin({
+      minify: true,
+      pages: [
+        {
+          entry: 'src/pages/home/main.js',
+          filename: 'home/index.html',
+          template: 'src/pages/home/index.html',
+          injectOptions: {
+            data: {
+              title: 'Strona Główna',
+              injectScript: '<script>console.log("Home page")</script>',
+            },
+          },
+        },
+        {
+          entry: 'src/pages/about/main.js',
+          filename: 'about/index.html',
+          template: 'src/pages/about/index.html',
+        },
+      ],
+    }),
+  ],
+  build: {
+    rollupOptions: {
+      input: {
+        home: resolve(__dirname, 'src/pages/home/index.html'),
+        about: resolve(__dirname, 'src/pages/about/index.html'),
+      }
+    }
+  }
+})
+Praktyczne uwagi
+🎯 Kiedy warto używać src/pages/:
+Gdy masz wiele niezależnych stron
+Gdy chcesz współdzielić komponenty między stronami
+Gdy potrzebujesz przetwarzania HTML przez Vite
+W projektach typu "design system" z wieloma przykładami
+⚠️ Kiedy lepiej używać root HTML:
+Bardzo proste projekty z 1-2 stronami
+Gdy preferujesz tradycyjną strukturę
+Przy migracji starszych projektów
+Podsumowanie
+Umieszczanie HTML w src/pages/ jest całkowicie praktyczne i często stosowane. 
+To podejście oferuje lepszą organizację kodu i pełną integrację z ekosystemem Vite. 
+Wiele nowoczesnych frameworków i starter kits używa podobnej struktury dla aplikacji multi-page.
+

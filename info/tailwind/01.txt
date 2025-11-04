@@ -1,0 +1,487 @@
+Tailwind CSS może być używany z dowolnym projektem, niezależnie od frameworka czy nawet bez niego. Można go używać z React, Vue, Angular, Svelte, a także z czystym JavaScript i Web Components.
+
+W przypadku Web Components, istnieje kilka sposobów na użycie Tailwind CSS:
+
+Bezpośrednio w szablonie HTML (jeśli używasz Shadow DOM, musisz wstrzyknąć style do shadow root).
+Korzystając z CSS Variables (jeśli skonfigurowałeś Tailwind, aby używał zmiennych CSS).
+Używając @apply w swoim CSS do zastosowania klas Tailwind.
+Jednakże, gdy używasz Web Components z Shadow DOM, style z zewnątrz (w tym globalne style Tailwind) nie przenikają do komponentu. Musisz więc dostarczyć style wewnątrz każdego komponentu.
+
+Przykład użycia Tailwind CSS z Web Component bez Shadow DOM
+Jeśli nie używasz Shadow DOM, możesz po prostu używać klas Tailwind w szablonie HTML twojego komponentu, pod warunkiem, że globalne style Tailwind są załadowane.
+
+html
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tailwind with Web Component</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <my-component></my-component>
+
+  <script>
+    class MyComponent extends HTMLElement {
+      connectedCallback() {
+        this.innerHTML = `
+          <div class="bg-blue-500 text-white p-4 rounded">
+            This is a Web Component using Tailwind CSS
+          </div>
+        `;
+      }
+    }
+
+    customElements.define('my-component', MyComponent);
+  </script>
+</body>
+</html>
+Przykład z Shadow DOM
+Jeśli używasz Shadow DOM, musisz wstrzyknąć style Tailwind do shadow root. Możesz to zrobić na kilka sposobów:
+
+Sposób 1: Użyj link do arkusza stylów Tailwind (niezalecane, bo ładuje cały Tailwind)
+html
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tailwind with Web Component and Shadow DOM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <my-component></my-component>
+
+  <script>
+    class MyComponent extends HTMLElement {
+      constructor() {
+        super();
+        const shadow = this.attachShadow({ mode: 'open' });
+        shadow.innerHTML = `
+          <link rel="stylesheet" href="https://cdn.tailwindcss.com">
+          <div class="bg-blue-500 text-white p-4 rounded">
+            This is a Web Component using Tailwind CSS inside Shadow DOM
+          </div>
+        `;
+      }
+    }
+
+    customElements.define('my-component', MyComponent);
+  </script>
+</body>
+</html>
+Uwaga: Wstrzykiwanie całego arkusza Tailwind do każdego komponentu może być nieefektywne.
+
+Sposób 2: Użyj wyodrębnionych klas CSS (zalecane)
+Możesz wyodrębnić tylko te klasy Tailwind, których używasz, za pomocą narzędzia @tailwindcss/oxide (w wersji 3.0+ Tailwind domyślnie używa engine oxide) lub użyć postcss do wyodrębnienia CSS dla twoich komponentów.
+
+W praktyce, w projekcie z build process (np. Vite), możesz skonfigurować Tailwind tak, aby wygenerował plik CSS zawierający tylko używane klasy, a następnie wstrzyknąć ten plik (lub jego część) do komponentu.
+
+Ale w prostym przykładzie bez build process, możesz ręcznie skopiować wygenerowane klasy CSS dla danego komponentu.
+
+Sposób 3: Użyj CSS Variables (jeśli skonfigurowałeś Tailwind z zmiennymi)
+Tailwind można skonfigurować, aby używał zmiennych CSS dla kolorów, czcionek, etc. Wtedy możesz używać tych zmiennych wewnątrz komponentu.
+
+Konfiguracja Tailwind w projekcie Vite z Web Components
+W projekcie Vite, możesz skonfigurować Tailwind tak, aby generował plik CSS, który następnie możesz importować w twoich komponentach.
+
+Kroki:
+
+Zainstaluj Tailwind CSS w projekcie Vite:
+bash
+
+
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+Skonfiguruj tailwind.config.js:
+javascript
+
+
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    // Dodaj ścieżki do twoich Web Components, jeśli są w plikach .js
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+Dodaj plik src/style.css z dyrektywami Tailwind:
+css
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+Zaimportuj style.css w twoim głównym pliku JS (np. main.js):
+javascript
+
+
+import './style.css';
+W twoim Web Component, możesz używać klas Tailwind, ale jeśli używasz Shadow DOM, musisz wstrzyknąć style. Możesz to zrobić importując wygenerowany plik CSS i wstrzykując go do shadow root.
+Przykład komponentu w Vite:
+
+javascript
+
+
+// my-component.js
+import styles from './style.css?inline' // Vite supports CSS import as string
+
+class MyComponent extends HTMLElement {
+  constructor() {
+    super()
+    const shadow = this.attachShadow({ mode: 'open' })
+    shadow.innerHTML = `
+      <style>${styles}</style>
+      <div class="bg-blue-500 text-white p-4 rounded">
+        This is a Web Component using Tailwind CSS inside Shadow DOM
+      </div>
+    `
+  }
+}
+
+customElements.define('my-component', MyComponent)
+Uwaga: Importowanie całego arkusza stylów Tailwind do każdego komponentu może prowadzić do duplikacji stylów. Dlatego lepszym podejściem jest wyodrębnienie tylko niezbędnych klas dla każdego komponentu.
+
+Alternatywne podejście: użycie @apply w osobnych plikach CSS
+Możesz stworzyć osobny plik CSS dla każdego komponentu i używać dyrektywy @apply Tailwind, aby zastosować klasy. Następnie wstrzyknąć tylko ten plik CSS do komponentu.
+
+Przykład:
+
+css
+
+
+/* my-component.css */
+.my-component {
+  @apply bg-blue-500 text-white p-4 rounded;
+}
+Następnie w komponencie:
+
+javascript
+
+
+import styles from './my-component.css?inline'
+
+class MyComponent extends HTMLElement {
+  constructor() {
+    super()
+    const shadow = this.attachShadow({ mode: 'open' })
+    shadow.innerHTML = `
+      <style>${styles}</style>
+      <div class="my-component">
+        This is a Web Component using Tailwind CSS inside Shadow DOM
+      </div>
+    `
+  }
+}
+Podsumowanie
+Tailwind CSS może być używany z Web Components, ale w przypadku Shadow DOM musisz wstrzykiwać style do każdego komponentu. W projektach z build process (jak Vite) możesz importować style jako string i wstrzykiwać je. Pamiętaj, że wstrzykiwanie całego Tailwind do każdego komponentu może nie być optymalne, więc rozważ wyodrębnienie tylko potrzebnych stylów.
+
+W nowszych wersjach Tailwind (v3.0+), można użyć @tailwindcss/oxide do wyodrębnienia tylko używanych klas, ale to wymaga dodatkowej konfiguracji.
+
+W praktyce, wiele osób używa Tailwind z Web Components bez Shadow DOM, aby uniknąć problemów z stylem, lub używa innych metod, takich jak CSS Modules lub styled-components dla Web Components.
+
+Tailwind CSS może być używany z dowolną technologią - nie tylko z React! Jest to narzędzie CSS-first, które doskonale współpracuje z Web Components, vanilla JS, Vue, Svelte i wieloma innymi.
+
+Tailwind CSS z Web Components i vanilla JS
+Podstawowa konfiguracja Vite z Tailwind
+package.json
+
+JSON
+
+{
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "vite": "^5.0.0"
+  }
+}
+vite.config.js
+
+JavaScript
+
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  // Konfiguracja Vite
+})
+tailwind.config.js
+
+JavaScript
+
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{html,js,ts}",
+    "./src/**/*.html"
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+postcss.config.js
+
+JavaScript
+
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+src/style.css
+
+CSS
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+Przykłady użycia Tailwind z różnymi technologiami
+1. Z vanilla JavaScript i zwykłym HTML
+src/pages/home/index.html
+
+HTML
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strona z Tailwind</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-blue-600 mb-6">Witaj w Tailwind!</h1>
+    
+    <button 
+      id="myButton" 
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+    >
+      Kliknij mnie
+    </button>
+    
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-semibold mb-2">Karta 1</h3>
+        <p class="text-gray-600">To jest karta z Tailwind CSS</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
+src/pages/home/main.js
+
+JavaScript
+
+// Vanilla JS z Tailwind
+document.getElementById('myButton').addEventListener('click', () => {
+  const card = document.createElement('div')
+  card.className = 'bg-green-100 p-4 rounded-lg border border-green-300 mt-4'
+  card.innerHTML = `
+    <h4 class="font-bold text-green-800">Nowa karta!</h4>
+    <p class="text-green-600">Dodana dynamicznie z Tailwind</p>
+  `
+  document.querySelector('.grid').appendChild(card)
+})
+2. Z Web Components / Custom Elements
+src/components/my-card.js
+
+JavaScript
+
+class MyCard extends HTMLElement {
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open' })
+  }
+
+  connectedCallback() {
+    this.render()
+  }
+
+  render() {
+    this.shadowRoot.innerHTML = `
+      <style>
+        /* Możesz też importować Tailwind do Shadow DOM */
+        @import url('/src/style.css');
+      </style>
+      <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+        <h3 class="text-xl font-bold text-gray-800 mb-2">
+          <slot name="title">Default Title</slot>
+        </h3>
+        <div class="text-gray-600">
+          <slot name="content">Default content</slot>
+        </div>
+        <button class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+          <slot name="button">Action</slot>
+        </button>
+      </div>
+    `
+  }
+}
+
+customElements.define('my-card', MyCard)
+Użycie Web Component z Tailwind:
+
+HTML
+
+<my-card>
+  <span slot="title">Mój komponent</span>
+  <div slot="content">
+    To jest zawartość z <strong class="text-red-500">Tailwind CSS</strong>
+  </div>
+  <span slot="button">Kliknij</span>
+</my-card>
+3. Z bardziej zaawansowanymi Web Components
+src/components/tailwind-component.js
+
+JavaScript
+
+import { tailwindStyles } from '../utils/tailwind-injector.js'
+
+class TailwindComponent extends HTMLElement {
+  constructor() {
+    super()
+    this.shadow = this.attachShadow({ mode: 'open' })
+  }
+
+  connectedCallback() {
+    this.render()
+  }
+
+  render() {
+    this.shadow.innerHTML = `
+      ${this.getStyles()}
+      <div class="component">
+        <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-lg">
+          <h2 class="text-2xl font-bold mb-2">${this.getAttribute('title')}</h2>
+          <p class="opacity-90">${this.getAttribute('content')}</p>
+          <div class="mt-4 flex space-x-2">
+            <button class="btn-primary">Primary</button>
+            <button class="btn-secondary">Secondary</button>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  getStyles() {
+    return `
+      <style>
+        .component {
+          /* Podstawowe style komponentu */
+        }
+        
+        .btn-primary {
+          @apply bg-white text-purple-600 px-4 py-2 rounded font-semibold hover:bg-gray-100 transition-colors;
+        }
+        
+        .btn-secondary {
+          @apply bg-transparent border border-white text-white px-4 py-2 rounded font-semibold hover:bg-white hover:text-purple-600 transition-colors;
+        }
+      </style>
+    `
+  }
+}
+
+customElements.define('tailwind-component', TailwindComponent)
+Zaawansowane techniki integracji
+1. Tailwind w Shadow DOM
+src/utils/tailwind-injector.js
+
+JavaScript
+
+// Funkcja do wstrzykiwania Tailwind do Shadow DOM
+export function injectTailwindToShadow(shadowRoot) {
+  const style = document.createElement('style')
+  style.textContent = `
+    /* Wklej tutaj skompilowany CSS z Tailwind */
+    /* Albo dynamicznie zaimportuj */
+  `
+  shadowRoot.appendChild(style)
+}
+
+// Alternatywnie: użyj Constructable Stylesheets
+export async function loadTailwindStyles() {
+  const response = await fetch('/src/style.css')
+  const css = await response.text()
+  return new CSSStyleSheet().replace(css)
+}
+2. Konfiguracja z komponentami
+tailwind.config.js dla Web Components
+
+JavaScript
+
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./src/**/*.{html,js}",
+    "./src/components/**/*.js", // Web Components
+  ],
+  theme: {
+    extend: {
+      colors: {
+        'custom-primary': '#1a365d',
+      }
+    },
+  },
+  plugins: [
+    // Pluginy dla lepszego DX z Web Components
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+  ],
+}
+Praktyczne przykłady zastosowań
+Dashboard z vanilla JS + Tailwind
+HTML
+
+<div class="min-h-screen bg-gray-50">
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold text-gray-900">Dashboard</h1>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+      <div class="border-4 border-dashed border-gray-200 rounded-lg h-96"></div>
+    </div>
+  </main>
+</div>
+Dlaczego Tailwind jest uniwersalny?
+✅ Zalety Tailwind z vanilla JS/Web Components:
+Niskie coupling - nie zależy od frameworka
+Utility-first - idealne dla komponentów
+Tree shaking - usuwa nieużywane style
+Hot reload - doskonałe z Vite
+Design consistency - spójny wygląd w całej aplikacji
+🎯 Popularne kombinacje:
+Vanilla JS + Tailwind - proste strony, prototypy
+Web Components + Tailwind - design system, reusable components
+Lit Element + Tailwind - zaawansowane Web Components
+Stimulus + Tailwind - rozszerzenie HTML o zachowanie
+Podsumowanie
+Tailwind CSS jest całkowicie niezależny od Reacta i doskonale sprawdza się z:
+
+✅ Vanilla JavaScript
+✅ Web Components / Custom Elements
+✅ Vue, Svelte, Angular
+✅ Any other framework or no framework
+To właśnie ta uniwersalność czyni Tailwind tak popularnym - możesz używać go z dowolną technologią frontendową!

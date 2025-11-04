@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Components Demo</title>
+    <link rel="stylesheet" href="/src/styles/global.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Material Web Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+<body>
+    <div class="page-header">
+        <a href="index.html" class="back-button">
+            <span class="material-icons">arrow_back</span>
+            Strona Główna
+        </a>
+        <h1>⚡ Interactive Demo</h1>
+        <p>Zobacz komponenty w akcji z rzeczywistymi przykładami</p>
+    </div>
+
+    <main class="container">
+        <!-- Sekcja z Switch Material Web -->
+        <section class="demo-section">
+            <h2>🔘 Material Web Switches</h2>
+            
+            <div class="switches-demo">
+                <material-card elevated>
+                    <span slot="title">Ustawienia Aplikacji</span>
+                    <div slot="content">
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <md-switch selected id="notificationsSwitch"></md-switch>
+                                <div class="label-content">
+                                    <span class="label-title">Powiadomienia push</span>
+                                    <span class="label-description">Otrzymuj powiadomienia na bieżąco</span>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <md-switch id="darkModeSwitch"></md-switch>
+                                <div class="label-content">
+                                    <span class="label-title">Ciemny motyw</span>
+                                    <span class="label-description">Przełącz na ciemny wygląd aplikacji</span>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <md-switch selected id="autoUpdateSwitch"></md-switch>
+                                <div class="label-content">
+                                    <span class="label-title">Automatyczne aktualizacje</span>
+                                    <span class="label-description">Aktualizuj aplikację w tle</span>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <md-switch disabled id="offlineSwitch"></md-switch>
+                                <div class="label-content">
+                                    <span class="label-title">Tryb offline</span>
+                                    <span class="label-description">Dostępne wkrótce</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <md-switch icons id="iconsSwitch"></md-switch>
+                                <div class="label-content">
+                                    <span class="label-title">Switch z ikonami</span>
+                                    <span class="label-description">Pokazuj ikony on/off</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </material-card>
+
+                <material-card elevated class="preview-card">
+                    <span slot="title">Podgląd na żywo</span>
+                    <div slot="content">
+                        <div class="preview-area">
+                            <div class="preview-item">
+                                <span>Przełącznik demo:</span>
+                                <md-switch id="demoSwitch"></md-switch>
+                            </div>
+                            
+                            <div id="switchStatus" class="status-message">
+                                Status: Oczekiwanie na akcję...
+                            </div>
+                        </div>
+                        
+                        <div class="switch-stats">
+                            <h4>Statystyki:</h4>
+                            <div class="stats-grid">
+                                <div class="stat">
+                                    <span class="stat-value" id="switchOnCount">0</span>
+                                    <span class="stat-label">Włączone</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value" id="switchOffCount">0</span>
+                                    <span class="stat-label">Wyłączone</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value" id="totalChanges">0</span>
+                                    <span class="stat-label">Zmiany</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="preview-actions">
+                            <md-filled-button id="resetSwitches">
+                                <md-icon slot="icon">refresh</md-icon>
+                                Resetuj wszystkie
+                            </md-filled-button>
+                            <md-outlined-button id="toggleAllSwitches">
+                                <md-icon slot="icon">swap_horiz</md-icon>
+                                Odwróć wszystkie
+                            </md-outlined-button>
+                        </div>
+                    </div>
+                </material-card>
+            </div>
+        </section>
+
+        <!-- Sekcja z różnymi wariantami switchy -->
+        <section class="demo-section">
+            <h2>🎨 Warianty Switchy</h2>
+            
+            <div class="variants-grid">
+                <material-card elevated>
+                    <span slot="title">Podstawowe</span>
+                    <div slot="content" class="variants-content">
+                        <div class="variant-item">
+                            <md-switch></md-switch>
+                            <span>Standard</span>
+                        </div>
+                        <div class="variant-item">
+                            <md-switch selected></md-switch>
+                            <span>Wybrany</span>
+                        </div>
+                        <div class="variant-item">
+                            <md-switch disabled></md-switch>
+                            <span>Wyłączony</span>
+                        </div>
+                        <div class="variant-item">
+                            <md-switch selected disabled></md-switch>
+                            <span>Wybrany i wyłączony</span>
+                        </div>
+                    </div>
+                </material-card>
+
+                <material-card elevated>
+                    <span slot="title">Z ikonami</span>
+                    <div slot="content" class="variants-content">
+                        <div class="variant-item">
+                            <md-switch icons></md-switch>
+                            <span>Z ikonami</span>
+                        </div>
+                        <div class="variant-item">
+                            <md-switch icons selected></md-switch>
+                            <span>Wybrany z ikonami</span>
+                        </div>
+                        <div class="variant-item">
+                            <md-switch icons show-only-selected-icon></md-switch>
+                            <span>Tylko wybrana ikona</span>
+                        </div>
+                    </div>
+                </material-card>
+
+                <material-card elevated>
+                    <span slot="title">Zaawansowane</span>
+                    <div slot="content" class="variants-content">
+                        <div class="variant-item">
+                            <md-switch required></md-switch>
+                            <span>Wymagany</span>
+                        </div>
+                        <div class="variant-item">
+                            <md-switch name="custom-switch" value="on"></md-switch>
+                            <span>Z name i value</span>
+                        </div>
+                    </div>
+                </material-card>
+            </div>
+        </section>
+
+        <!-- Sekcja Dashboard Demo -->
+        <section class="demo-section">
+            <h2>🎯 Dashboard Demo</h2>
+            <div class="dashboard-grid">
+                <material-card elevated class="stat-card">
+                    <span slot="title">📊 Statystyki</span>
+                    <div slot="content">
+                        <div class="stat-value" id="clickCount">0</div>
+                        <div class="stat-label">Kliknięć przycisku</div>
+                    </div>
+                    <div slot="actions">
+                        <md-filled-button id="incrementStat">
+                            <md-icon slot="icon">add</md-icon>
+                            Zwiększ
+                        </md-filled-button>
+                    </div>
+                </material-card>
+
+                <material-card elevated class="form-card">
+                    <span slot="title">👤 Formularz użytkownika</span>
+                    <div slot="content">
+                        <md-outlined-text-field label="Imię" id="firstName">
+                            <md-icon slot="leading-icon">person</md-icon>
+                        </md-outlined-text-field>
+                        
+                        <md-outlined-text-field label="Nazwisko" id="lastName">
+                            <md-icon slot="leading-icon">badge</md-icon>
+                        </md-outlined-text-field>
+                        
+                        <md-outlined-text-field type="email" label="Email" id="email">
+                            <md-icon slot="leading-icon">email</md-icon>
+                        </md-outlined-text-field>
+
+                        <div class="form-switches">
+                            <label class="form-switch">
+                                <md-switch id="newsletterSwitch"></md-switch>
+                                <span>Chcę otrzymywać newsletter</span>
+                            </label>
+                            <label class="form-switch">
+                                <md-switch selected id="termsSwitch"></md-switch>
+                                <span>Akceptuję regulamin</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div slot="actions">
+                        <md-outlined-button id="resetForm">Reset</md-outlined-button>
+                        <md-filled-button id="submitForm">Zapisz</md-filled-button>
+                    </div>
+                </material-card>
+            </div>
+        </section>
+    </main>
+
+     <main class="container">
+        <h1>Hello</h1>
+    <md-tabs>
+  <md-primary-tab>
+    <md-icon slot="icon">piano</md-icon>
+    Keyboard
+  </md-primary-tab>
+  <md-primary-tab>
+    <md-icon slot="icon">tune</md-icon>
+    Guitar
+  </md-primary-tab>
+</md-tabs>
+
+<md-slider></md-slider>
+<md-slider ticks value="50"></md-slider>
+<md-slider range value-start="25" value-end="75"></md-slider>
+
+
+<md-list style="max-width: 300px;">
+  <md-list-item>
+    Fruits
+  </md-list-item>
+  <md-divider></md-divider>
+  <md-list-item>
+    Apple
+</md-list-item>
+  <md-list-item>
+    Banana
+  </md-list-item>
+  <md-list-item>
+    <div slot="headline">Cucumber</div>
+    <div slot="supporting-text">Cucumbers are long green fruits that are just as long as this multi-line description</div>
+  </md-list-item>
+  <md-list-item
+      type="link"
+      href="https://google.com/search?q=buy+kiwis&tbm=shop"
+      target="_blank">
+    <div slot="headline">Shop for Kiwis</div>
+    <div slot="supporting-text">This will link you out in a new tab</div>
+    <md-icon slot="end">open_in_new</md-icon>
+  </md-list-item>
+</md-list>
+
+
+
+
+
+    </main>
+
+    <!-- Import Material Web Components -->
+    <script type="module">
+        import '@material/web/switch/switch.js';
+        import '@material/web/button/filled-button.js';
+        import '@material/web/button/outlined-button.js';
+        import '@material/web/textfield/outlined-text-field.js';
+        import '@material/web/icon/icon.js';
+
+        //dodaje wszystkie komponenty od razu a nie pojedynczo - ale wzrasta js rozmiar 
+        //od razu robi się 120kB !!!! dla basic-examples
+        //od razu 500KB
+        import '@material/web/all.js';
+        
+    </script>
+
+    <script type="module" src="/src/main.js"></script>
+    <script type="module">
+        // Switch functionality with Material Web
+        const switches = {
+            notifications: document.getElementById('notificationsSwitch'),
+            darkMode: document.getElementById('darkModeSwitch'),
+            autoUpdate: document.getElementById('autoUpdateSwitch'),
+            offline: document.getElementById('offlineSwitch'),
+            icons: document.getElementById('iconsSwitch'),
+            demo: document.getElementById('demoSwitch'),
+            newsletter: document.getElementById('newsletterSwitch'),
+            terms: document.getElementById('termsSwitch')
+        };
+
+        const switchStatus = document.getElementById('switchStatus');
+        const resetSwitchesBtn = document.getElementById('resetSwitches');
+        const toggleAllBtn = document.getElementById('toggleAllSwitches');
+        
+        const switchOnCount = document.getElementById('switchOnCount');
+        const switchOffCount = document.getElementById('switchOffCount');
+        const totalChanges = document.getElementById('totalChanges');
+
+        let changeCount = 0;
+
+        function updateStats() {
+            const allSwitches = Object.values(switches);
+            const onCount = allSwitches.filter(sw => sw?.selected).length;
+            const offCount = allSwitches.length - onCount;
+            
+            switchOnCount.textContent = onCount;
+            switchOffCount.textContent = offCount;
+            totalChanges.textContent = changeCount;
+        }
+
+        // Obsługa zmian switchy
+        Object.entries(switches).forEach(([key, switchElement]) => {
+            if (switchElement) {
+                switchElement.addEventListener('change', (e) => {
+                    changeCount++;
+                    updateStats();
+                    
+                    const action = e.target.selected ? 'włączony' : 'wyłączony';
+                    const switchNames = {
+                        notifications: 'Powiadomienia push',
+                        darkMode: 'Ciemny motyw',
+                        autoUpdate: 'Automatyczne aktualizacje',
+                        offline: 'Tryb offline',
+                        icons: 'Switch z ikonami',
+                        demo: 'Przełącznik demo',
+                        newsletter: 'Newsletter',
+                        terms: 'Regulamin'
+                    };
+                    
+                    switchStatus.innerHTML = `
+                        <span style="color: var(--md-sys-color-primary);">
+                            ✅ ${switchNames[key]} został ${action}
+                        </span>
+                    `;
+                    
+                    // Efekty wizualne
+                    if (key === 'darkMode') {
+                        document.body.classList.toggle('dark-preview', e.target.selected);
+                    }
+                });
+            }
+        });
+
+        // Reset switchy
+        resetSwitchesBtn.addEventListener('click', () => {
+            Object.values(switches).forEach(sw => {
+                if (sw) {
+                    sw.selected = false;
+                }
+            });
+            // Przywróć niektóre do stanu domyślnego
+            switches.notifications.selected = true;
+            switches.autoUpdate.selected = true;
+            switches.terms.selected = true;
+            
+            document.body.classList.remove('dark-preview');
+            switchStatus.textContent = 'Status: Wszystkie switche zresetowane';
+            changeCount++;
+            updateStats();
+        });
+
+        // Odwróć wszystkie switche
+        toggleAllBtn.addEventListener('click', () => {
+            Object.values(switches).forEach(sw => {
+                if (sw && !sw.disabled) {
+                    sw.selected = !sw.selected;
+                }
+            });
+            changeCount++;
+            updateStats();
+            switchStatus.textContent = 'Status: Wszystkie switche odwrócone';
+        });
+
+        // Inicjalizacja statystyk
+        updateStats();
+
+        // Pozostała funkcjonalność...
+        let clickCount = 0;
+        const clickCountElement = document.getElementById('clickCount');
+        const incrementButton = document.getElementById('incrementStat');
+        
+        incrementButton.addEventListener('click', () => {
+            clickCount++;
+            clickCountElement.textContent = clickCount;
+            clickCountElement.style.animation = 'pulse 0.3s ease';
+            setTimeout(() => {
+                clickCountElement.style.animation = '';
+            }, 300);
+        });
+
+        // Form handling
+        const resetButton = document.getElementById('resetForm');
+        const submitButton = document.getElementById('submitForm');
+        
+        resetButton.addEventListener('click', () => {
+            document.querySelectorAll('md-outlined-text-field').forEach(field => {
+                field.value = '';
+            });
+            switches.newsletter.selected = false;
+            switches.terms.selected = true;
+        });
+        
+        submitButton.addEventListener('click', () => {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const acceptedTerms = switches.terms.selected;
+            
+            if (!acceptedTerms) {
+                alert('Proszę zaakceptować regulamin!');
+                return;
+            }
+            
+            alert(`Witaj ${firstName} ${lastName}! Formularz został zapisany.`);
+        });
+    </script>
+    
+    <style>
+        .switches-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .setting-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 0;
+        }
+
+        .label-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .label-title {
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .label-description {
+            font-size: 0.875rem;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .preview-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--md-sys-color-surface-container-high);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .status-message {
+            background: var(--md-sys-color-surface-container-high);
+            padding: 1rem;
+            border-radius: 8px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .switch-stats {
+            margin: 1.5rem 0;
+        }
+
+        .switch-stats h4 {
+            margin: 0 0 1rem 0;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 1rem;
+            background: var(--md-sys-color-surface-container-high);
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--md-sys-color-primary);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: auto;
+        }
+
+        .preview-actions md-filled-button,
+        .preview-actions md-outlined-button {
+            flex: 1;
+        }
+
+        /* Warianty switchy */
+        .variants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .variants-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .variant-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 0;
+        }
+
+        /* Form switches */
+        .form-switches {
+            margin-top: 1.5rem;
+        }
+
+        .form-switch {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            cursor: pointer;
+        }
+
+        /* Dark mode preview */
+        .dark-preview {
+            background: #1a1a1a !important;
+        }
+
+        .dark-preview .page-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+        }
+
+        /* Responsywność */
+        @media (max-width: 768px) {
+            .switches-demo {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .preview-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* Material Web overrides */
+        md-switch {
+            --md-switch-selected-handle-color: var(--md-sys-color-primary);
+            --md-switch-selected-track-color: var(--md-sys-color-primary);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--md-sys-color-primary);
+            margin: 1rem 0;
+        }
+
+        .stat-label {
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</body>
+</html>
