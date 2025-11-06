@@ -1,0 +1,51 @@
+/server 
+dodanie własnego servera dla json
+
+
+npm install express
+npm cors
+
+npm install -D concurrently
+
+
+------------
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
+    "start": "npm run build && npm run server"
+  },
+
+=====================
+
+
+
+advanced-server.js
+
+npm install sqlite3 sqlite
+
+
+npm run dev:full
+npm run build
+npm run server
+
+---------------------------
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3002',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  }
+})
+
+
+// W development działa przez proxy, w production bezpośrednio
+const API_BASE = import.meta.env.DEV ? '/api' : 'http://localhost:3001/api'

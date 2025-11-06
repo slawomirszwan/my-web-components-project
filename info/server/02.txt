@@ -1,0 +1,554 @@
+
+
+
+
+
+
+a co z własnym webservicem na potrzeby aplikacji
+
+deepseek-v3.2-exp-thinking
+
+Thought for 12 seconds
+
+Tak, możesz dodać webservice do pobierania danych w projekcie Vite. Pokażę Ci kilka podejść od najprostszego do bardziej zaawansowanego.
+
+1. Podstawowe podejście z Fetch API
+Struktura projektu
+text
+
+src/
+├── services/
+│   └── api.js
+├── pages/
+│   ├── home/
+│   │   ├── index.html
+│   │   └── main.js
+│   └── about/
+│       ├── index.html
+│       └── main.js
+└── utils/
+    └── helpers.js
+Service do API (src/services/api.js)
+JavaScript
+
+// Podstawowy serwis API
+const BASE_URL = 'https://jsonplaceholder.typicode.com'
+
+export class ApiService {
+  static async get(endpoint) {
+    try {
+      const response = await fetch(`${BASE_URL}${endpoint}`)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
+  }
+
+  static async post(endpoint, data) {
+    try {
+      const response = await fetch(`${BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
+  }
+
+  // Specjalizowane metody
+  static async getUsers() {
+    return this.get('/users')
+  }
+
+  static async getPosts() {
+    return this.get('/posts')
+  }
+
+  static async getUserById(id) {
+    return this.get(`/users/${id}`)
+  }
+}
+2. Przykład użycia w komponencie
+src/pages/home/main.js
+JavaScript
+
+import { ApiService } from '../../services/api.js'
+
+class HomePage {
+  constructor() {
+    this.container = document.getElementById('app')
+    this.init()
+  }
+
+  async init() {
+    await this.loadUsers()
+    await this.loadPosts()
+  }
+
+  async loadUsers() {
+    try {
+      this.showLoading('Ładowanie użytkowników...')
+      
+      const users = await ApiService.getUsers()
+      this.renderUsers(users)
+      
+    } catch (error) {
+      this.showError('Błąd ładowania użytkowników')
+    }
+  }
+
+  async loadPosts() {
+    try {
+      const posts = await ApiService.getPosts()
+      this.renderPosts(posts.slice(0, 5)) // Tylko 5 postów
+    } catch (error) {
+      this.showError('Błąd ładowania postów')
+    }
+  }
+
+  renderUsers(users) {
+    const usersHTML = users.map(user => `
+      <div class="user-card">
+        <h3>${user.name}</h3>
+        <p>Email: ${user.email}</p>
+        <p>Phone: ${user.phone}</p>
+      </div>
+    `).join('')
+
+    document.getElementById('users-container').innerHTML = usersHTML
+  }
+
+  renderPosts(posts) {
+    const postsHTML = posts.map(post => `
+      <div class="post-card">
+        <h4>${post.title}</h4>
+        <p>${post.body}</p>
+      </div>
+    `).join('')
+
+    document.getElementById('posts-container').innerHTML = postsHTML
+  }
+
+  showLoading(message) {
+    this.container.innerHTML = `
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>${message}</p>
+      </div>
+    `
+  }
+
+  showError(message) {
+    const errorDiv = document.createElement('div')
+    errorDiv.className = 'error-message'
+    errorDiv.innerHTML = `
+      <p>❌ ${message}</p>
+      <button onclick="location.reload()">Spróbuj ponownie</button>
+    `
+    this.container.appendChild(errorDiv)
+  }
+}
+
+// Inicjalizacja gdy strona się załaduje
+document.addEventListener('DOMContentLoaded', () => {
+  new HomePage()
+})
+src/pages/home/index.html
+HTML
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strona Główna z API</title>
+  <style>
+    .loading {
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 2s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .user-card, .post-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      background: white;
+    }
+    
+    .error-message {
+      background: #fee;
+      border: 1px solid #fcc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .section {
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Moja Aplikacja z API</h1>
+      <button id="refresh-btn">Odśwież dane</button>
+    </header>
+    
+    <main id="app">
+      <div class="section">
+        <h2>Użytkownicy</h2>
+        <div id="users-container"></div>
+      </div>
+      
+      <div class="section">
+        <h2>Ostatnie posty</h2>
+        <div id="posts-container"></div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
+3. Zaawansowany serwis z cache i error handling
+src/services/advanced-api.js
+JavaScript
+
+// Zaawansowany serwis API z cache i lepszym error handling
+class AdvancedApiService {
+  constructor() {
+    this.baseURL = 'https://jsonplaceholder.typicode.com'
+    this.cache = new Map()
+    this.requestQueue = new Map()
+  }
+
+  async request(endpoint, options = {}) {
+    const cacheKey = `${endpoint}-${JSON.stringify(options)}`
+    
+    // Sprawdz cache
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)
+    }
+
+    // Unikaj duplicate requests
+    if (this.requestQueue.has(cacheKey)) {
+      return this.requestQueue.get(cacheKey)
+    }
+
+    try {
+      const promise = this.makeRequest(endpoint, options)
+      this.requestQueue.set(cacheKey, promise)
+
+      const data = await promise
+      
+      // Zapisz w cache
+      this.cache.set(cacheKey, data)
+      this.requestQueue.delete(cacheKey)
+      
+      return data
+    } catch (error) {
+      this.requestQueue.delete(cacheKey)
+      throw error
+    }
+  }
+
+  async makeRequest(endpoint, options = {}) {
+    const url = `${this.baseURL}${endpoint}`
+    
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    }
+
+    const response = await fetch(url, config)
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+
+  // Retry mechanism
+  async requestWithRetry(endpoint, options = {}, maxRetries = 3) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await this.request(endpoint, options)
+      } catch (error) {
+        if (attempt === maxRetries) throw error
+        await this.delay(1000 * attempt) // Exponential backoff
+      }
+    }
+  }
+
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
+  // CRUD operations
+  async get(endpoint) {
+    return this.requestWithRetry(endpoint)
+  }
+
+  async post(endpoint, data) {
+    return this.request(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async put(endpoint, data) {
+    return this.request(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async delete(endpoint) {
+    return this.request(endpoint, { method: 'DELETE' })
+  }
+
+  // Clear cache
+  clearCache() {
+    this.cache.clear()
+  }
+}
+
+export const apiService = new AdvancedApiService()
+4. Hook do zarządzania stanem danych
+src/hooks/useApi.js
+JavaScript
+
+// Prosty hook do zarządzania stanem API (dla vanilla JS)
+export function useApi() {
+  const state = {
+    data: null,
+    loading: false,
+    error: null
+  }
+
+  const listeners = new Set()
+
+  function subscribe(listener) {
+    listeners.add(listener)
+    return () => listeners.delete(listener)
+  }
+
+  function notify() {
+    listeners.forEach(listener => listener(state))
+  }
+
+  function setState(newState) {
+    Object.assign(state, newState)
+    notify()
+  }
+
+  async function fetchData(apiCall, ...args) {
+    setState({ loading: true, error: null })
+    
+    try {
+      const data = await apiCall(...args)
+      setState({ data, loading: false, error: null })
+      return data
+    } catch (error) {
+      setState({ error, loading: false })
+      throw error
+    }
+  }
+
+  return {
+    get state() { return { ...state } },
+    fetchData,
+    subscribe,
+    setState
+  }
+}
+Użycie hooka w komponencie
+JavaScript
+
+import { useApi } from '../../hooks/useApi.js'
+import { ApiService } from '../../services/api.js'
+
+class UsersComponent {
+  constructor() {
+    this.api = useApi()
+    this.container = document.getElementById('users-container')
+    this.init()
+  }
+
+  init() {
+    // Subskrybuj zmiany stanu
+    this.api.subscribe(this.render.bind(this))
+    this.loadUsers()
+  }
+
+  async loadUsers() {
+    await this.api.fetchData(ApiService.getUsers)
+  }
+
+  render(state) {
+    if (state.loading) {
+      this.container.innerHTML = '<div class="loading">Ładowanie...</div>'
+      return
+    }
+
+    if (state.error) {
+      this.container.innerHTML = `
+        <div class="error">
+          Błąd: ${state.error.message}
+          <button onclick="usersComponent.loadUsers()">Spróbuj ponownie</button>
+        </div>
+      `
+      return
+    }
+
+    if (state.data) {
+      this.container.innerHTML = state.data.map(user => `
+        <div class="user-card">
+          <h3>${user.name}</h3>
+          <p>${user.email}</p>
+        </div>
+      `).join('')
+    }
+  }
+}
+5. Konfiguracja Vite z proxy (dla development)
+vite.config.js
+JavaScript
+
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  server: {
+    proxy: {
+      // Proxy dla API w development
+      '/api': {
+        target: 'https://jsonplaceholder.typicode.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  },
+  build: {
+    // Konfiguracja build
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        about: 'about.html',
+      }
+    }
+  }
+})
+Zmodyfikowany serwis API dla proxy
+JavaScript
+
+// W development używaj proxy, w production prawdziwy URL
+const BASE_URL = import.meta.env.DEV 
+  ? '/api' 
+  : 'https://jsonplaceholder.typicode.com'
+
+export class ApiService {
+  // ... reszta kodu bez zmian
+}
+6. Przykład z formularzem
+src/pages/contact/main.js
+JavaScript
+
+import { ApiService } from '../../services/api.js'
+
+class ContactForm {
+  constructor() {
+    this.form = document.getElementById('contact-form')
+    this.messageDiv = document.getElementById('message')
+    this.init()
+  }
+
+  init() {
+    this.form.addEventListener('submit', this.handleSubmit.bind(this))
+  }
+
+  async handleSubmit(event) {
+    event.preventDefault()
+    
+    const formData = new FormData(this.form)
+    const data = Object.fromEntries(formData)
+    
+    this.showMessage('Wysyłanie...', 'info')
+    
+    try {
+      // Symulacja wysłania formularza
+      const result = await ApiService.post('/posts', data)
+      this.showMessage('Wiadomość wysłana pomyślnie!', 'success')
+      this.form.reset()
+    } catch (error) {
+      this.showMessage('Błąd podczas wysyłania wiadomości', 'error')
+    }
+  }
+
+  showMessage(text, type) {
+    this.messageDiv.textContent = text
+    this.messageDiv.className = `message ${type}`
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  new ContactForm()
+})
+Podsumowanie
+To podejście daje Ci:
+
+✅ Separację concerns - logika API w osobnych plikach
+✅ Reusable services - możliwość użycia w wielu komponentach
+✅ Error handling - obsługa błędów i loading states
+✅ Cache - optymalizacja requestów
+✅ Proxy w development - unikanie problemów z CORS
+Możesz rozbudować to o:
+
+Authentication (tokeny)
+Request/Response interceptors
+Better TypeScript support
+Offline support
+Real-time updates (WebSockets)
+
+
+
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
